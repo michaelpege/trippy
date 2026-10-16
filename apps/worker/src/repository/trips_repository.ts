@@ -2,6 +2,7 @@
  * Trips Repository
  *
  * CRUD operations for trips and their associated places.
+ * Uses trippy_ table prefixes for multi-app database safety.
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -15,25 +16,25 @@ export class TripsRepository {
    */
   async listTrips(): Promise<Trip[]> {
     const { data: trips, error: tripsError } = await this.supabase
-      .from('trips')
+      .from('trippy_trips')
       .select('id, name, description, start_date, end_date, created_by, created_at, updated_at')
       .order('created_at', { ascending: false });
 
     if (tripsError) throw tripsError;
     if (!trips || trips.length === 0) return [];
 
-    // Fetch all trip_places joined with places details
+    // Fetch all trippy_trip_places joined with trippy_places details
     const tripIds = trips.map((t) => t.id);
     const { data: tripPlaces, error: placesError } = await this.supabase
-      .from('trip_places')
-      .select('id, trip_id, place_id, order_index, visit_time, notes, places(*)')
+      .from('trippy_trip_places')
+      .select('id, trip_id, place_id, order_index, visit_time, notes, trippy_places(*)')
       .in('trip_id', tripIds)
       .order('order_index', { ascending: true });
 
     if (placesError) throw placesError;
 
     const placesByTrip = new Map<string, TripPlaceItem[]>();
-    for (const tp of tripPlaces || []) {
+    for (const tp of (tripPlaces || []) as any[]) {
       if (!placesByTrip.has(tp.trip_id)) {
         placesByTrip.set(tp.trip_id, []);
       }
@@ -43,7 +44,7 @@ export class TripsRepository {
         order_index: tp.order_index,
         visit_time: tp.visit_time,
         notes: tp.notes,
-        place: Array.isArray(tp.places) ? tp.places[0] : tp.places,
+        place: Array.isArray(tp.trippy_places) ? tp.trippy_places[0] : tp.trippy_places,
       });
     }
 
@@ -58,7 +59,7 @@ export class TripsRepository {
    */
   async getTripById(id: string): Promise<Trip | null> {
     const { data: trip, error } = await this.supabase
-      .from('trips')
+      .from('trippy_trips')
       .select('*')
       .eq('id', id)
       .maybeSingle();
@@ -66,20 +67,20 @@ export class TripsRepository {
     if (error || !trip) return null;
 
     const { data: tripPlaces, error: placesError } = await this.supabase
-      .from('trip_places')
-      .select('id, trip_id, place_id, order_index, visit_time, notes, places(*)')
+      .from('trippy_trip_places')
+      .select('id, trip_id, place_id, order_index, visit_time, notes, trippy_places(*)')
       .eq('trip_id', id)
       .order('order_index', { ascending: true });
 
     if (placesError) throw placesError;
 
-    const places: TripPlaceItem[] = (tripPlaces || []).map((tp) => ({
+    const places: TripPlaceItem[] = ((tripPlaces || []) as any[]).map((tp) => ({
       id: tp.id,
       place_id: tp.place_id,
       order_index: tp.order_index,
       visit_time: tp.visit_time,
       notes: tp.notes,
-      place: Array.isArray(tp.places) ? tp.places[0] : tp.places,
+      place: Array.isArray(tp.trippy_places) ? tp.trippy_places[0] : tp.trippy_places,
     }));
 
     return {
@@ -104,7 +105,7 @@ export class TripsRepository {
     const tripId = `tr_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 7)}`;
 
     const { data: trip, error } = await this.supabase
-      .from('trips')
+      .from('trippy_trips')
       .insert({
         id: tripId,
         name: data.name,
@@ -128,7 +129,7 @@ export class TripsRepository {
         notes: p.notes || '',
       }));
 
-      const { error: insertError } = await this.supabase.from('trip_places').insert(rows);
+      const { error: insertError } = await this.supabase.from('trippy_trip_places').insert(rows);
       if (insertError) console.error('Error inserting trip places:', insertError);
     }
 
@@ -154,12 +155,12 @@ export class TripsRepository {
     if (data.start_date !== undefined) updates.start_date = data.start_date;
     if (data.end_date !== undefined) updates.end_date = data.end_date;
 
-    const { error } = await this.supabase.from('trips').update(updates).eq('id', id);
+    const { error } = await this.supabase.from('trippy_trips').update(updates).eq('id', id);
     if (error) throw error;
 
     if (data.places !== undefined) {
-      // Re-sync trip_places
-      await this.supabase.from('trip_places').delete().eq('trip_id', id);
+      // Re-sync trippy_trip_places
+      await this.supabase.from('trippy_trip_places').delete().eq('trip_id', id);
 
       if (data.places.length > 0) {
         const rows = data.places.map((p, index) => ({
@@ -171,7 +172,7 @@ export class TripsRepository {
           notes: p.notes || '',
         }));
 
-        await this.supabase.from('trip_places').insert(rows);
+        await this.supabase.from('trippy_trip_places').insert(rows);
       }
     }
 
@@ -182,7 +183,7 @@ export class TripsRepository {
    * Delete trip
    */
   async deleteTrip(id: string): Promise<boolean> {
-    const { error } = await this.supabase.from('trips').delete().eq('id', id);
+    const { error } = await this.supabase.from('trippy_trips').delete().eq('id', id);
     if (error) throw error;
     return true;
   }

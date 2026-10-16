@@ -164,8 +164,8 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleSetupStatus(w http.ResponseWriter, r *http.Request) {
-	// Query Supabase system_settings
-	url := fmt.Sprintf("%s/rest/v1/system_settings?key=eq.setup_status&select=value", cfg.SupabaseURL)
+	// Query Supabase trippy_system_settings
+	url := fmt.Sprintf("%s/rest/v1/trippy_system_settings?key=eq.setup_status&select=value", cfg.SupabaseURL)
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("apikey", cfg.SupabaseKey)
 	req.Header.Set("Authorization", "Bearer "+cfg.SupabaseKey)
@@ -207,7 +207,7 @@ func handleSetup(w http.ResponseWriter, r *http.Request) {
 
 	normalized := strings.ToLower(strings.TrimSpace(body.OwnerEmail))
 
-	// Upsert role_admin, role_members and system_settings in Supabase
+	// Upsert role_admin, role_members and trippy_system_settings in Supabase
 	jsonResp(w, http.StatusCreated, map[string]interface{}{
 		"success": true,
 		"message": "Owner registered successfully",
@@ -221,29 +221,29 @@ func handleSetup(w http.ResponseWriter, r *http.Request) {
 
 func handlePlaces(w http.ResponseWriter, r *http.Request) {
 	// Proxy / query places in Supabase PostgREST
-	url := fmt.Sprintf("%s/rest/v1/places?select=*&order=created_at.desc", cfg.SupabaseURL)
+	url := fmt.Sprintf("%s/rest/v1/trippy_places?select=*&order=created_at.desc", cfg.SupabaseURL)
 	proxySupabase(w, r, url)
 }
 
 func handlePlaceByID(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/api/places/")
-	url := fmt.Sprintf("%s/rest/v1/places?id=eq.%s", cfg.SupabaseURL, id)
+	url := fmt.Sprintf("%s/rest/v1/trippy_places?id=eq.%s", cfg.SupabaseURL, id)
 	proxySupabase(w, r, url)
 }
 
 func handleTrips(w http.ResponseWriter, r *http.Request) {
-	url := fmt.Sprintf("%s/rest/v1/trips?select=*,trip_places(*,places(*))&order=created_at.desc", cfg.SupabaseURL)
+	url := fmt.Sprintf("%s/rest/v1/trippy_trips?select=*,trippy_trip_places(*,trippy_places(*))&order=created_at.desc", cfg.SupabaseURL)
 	proxySupabase(w, r, url)
 }
 
 func handleTripByID(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/api/trips/")
-	url := fmt.Sprintf("%s/rest/v1/trips?id=eq.%s&select=*,trip_places(*,places(*))", cfg.SupabaseURL, id)
+	url := fmt.Sprintf("%s/rest/v1/trippy_trips?id=eq.%s&select=*,trippy_trip_places(*,trippy_places(*))", cfg.SupabaseURL, id)
 	proxySupabase(w, r, url)
 }
 
 func handleRoulettes(w http.ResponseWriter, r *http.Request) {
-	url := fmt.Sprintf("%s/rest/v1/roulettes?select=*&order=created_at.desc", cfg.SupabaseURL)
+	url := fmt.Sprintf("%s/rest/v1/trippy_roulettes?select=*&order=created_at.desc", cfg.SupabaseURL)
 	proxySupabase(w, r, url)
 }
 
@@ -258,13 +258,13 @@ func handleRouletteOperations(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Single roulette config
-	url := fmt.Sprintf("%s/rest/v1/roulettes?id=eq.%s", cfg.SupabaseURL, path)
+	url := fmt.Sprintf("%s/rest/v1/trippy_roulettes?id=eq.%s", cfg.SupabaseURL, path)
 	proxySupabase(w, r, url)
 }
 
 func executeRouletteSpin(w http.ResponseWriter, r *http.Request, rouletteID, authType, identifier string) {
 	// In production, loads items from Supabase, calculates weights, chooses winner randomly,
-	// and commits directly into roulette_audit_logs.
+	// and commits directly into trippy_audit_logs.
 	jsonResp(w, http.StatusOK, map[string]interface{}{
 		"winner": map[string]interface{}{
 			"item_id": "item_selected",
@@ -280,7 +280,7 @@ func handleAuditLogs(w http.ResponseWriter, r *http.Request) {
 		errorResp(w, http.StatusMethodNotAllowed, "Audit logs are strictly immutable and cannot be deleted or edited.")
 		return
 	}
-	url := fmt.Sprintf("%s/rest/v1/roulette_audit_logs?select=*&order=created_at.desc&limit=50", cfg.SupabaseURL)
+	url := fmt.Sprintf("%s/rest/v1/trippy_audit_logs?select=*&order=created_at.desc&limit=50", cfg.SupabaseURL)
 	proxySupabase(w, r, url)
 }
 
@@ -290,12 +290,12 @@ func handleAuditByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := strings.TrimPrefix(r.URL.Path, "/api/audit/")
-	url := fmt.Sprintf("%s/rest/v1/roulette_audit_logs?id=eq.%s", cfg.SupabaseURL, id)
+	url := fmt.Sprintf("%s/rest/v1/trippy_audit_logs?id=eq.%s", cfg.SupabaseURL, id)
 	proxySupabase(w, r, url)
 }
 
 func handleRoles(w http.ResponseWriter, r *http.Request) {
-	url := fmt.Sprintf("%s/rest/v1/roles?select=*&order=created_at.desc", cfg.SupabaseURL)
+	url := fmt.Sprintf("%s/rest/v1/trippy_roles?select=*&order=created_at.desc", cfg.SupabaseURL)
 	proxySupabase(w, r, url)
 }
 

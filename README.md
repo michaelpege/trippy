@@ -9,7 +9,7 @@
 
 ## Architecture Overview
 
-Modeled after the proven zero-cost serverless architecture in `michael-hub`:
+Trippy is built on an enterprise-grade, zero-cost serverless architecture:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

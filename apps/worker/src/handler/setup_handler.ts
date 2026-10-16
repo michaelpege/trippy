@@ -59,7 +59,7 @@ export class SetupHandler {
         return errorResponse('Invalid email format.', 400, corsConfig);
       }
 
-      const result = await setupRepo.initializeOwner(normalizedEmail);
+      const result = await setupRepo.initializeOwner(normalizedEmail, env);
 
       return jsonResponse(
         {

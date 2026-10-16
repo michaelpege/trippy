@@ -16,7 +16,7 @@ export class RouletteRepository {
    */
   async listRoulettes(): Promise<Roulette[]> {
     const { data, error } = await this.supabase
-      .from('roulettes')
+      .from('trippy_roulettes')
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -33,7 +33,7 @@ export class RouletteRepository {
    */
   async getRouletteById(id: string): Promise<Roulette | null> {
     const { data, error } = await this.supabase
-      .from('roulettes')
+      .from('trippy_roulettes')
       .select('*')
       .eq('id', id)
       .maybeSingle();
@@ -64,7 +64,7 @@ export class RouletteRepository {
     const rouletteId = `rou_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 7)}`;
 
     const { data: created, error } = await this.supabase
-      .from('roulettes')
+      .from('trippy_roulettes')
       .insert({
         id: rouletteId,
         title: data.title,
@@ -113,7 +113,7 @@ export class RouletteRepository {
     if (data.is_active !== undefined) updates.is_active = data.is_active;
 
     const { data: updated, error } = await this.supabase
-      .from('roulettes')
+      .from('trippy_roulettes')
       .update(updates)
       .eq('id', id)
       .select()
@@ -127,7 +127,7 @@ export class RouletteRepository {
    * Delete roulette
    */
   async deleteRoulette(id: string): Promise<boolean> {
-    const { error } = await this.supabase.from('roulettes').delete().eq('id', id);
+    const { error } = await this.supabase.from('trippy_roulettes').delete().eq('id', id);
     if (error) throw error;
     return true;
   }
@@ -179,7 +179,7 @@ export class RouletteRepository {
     // Record to immutable audit table
     const auditId = `aud_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 7)}`;
     const { data: audit, error: auditError } = await this.supabase
-      .from('roulette_audit_logs')
+      .from('trippy_audit_logs')
       .insert({
         id: auditId,
         roulette_id: roulette.id,

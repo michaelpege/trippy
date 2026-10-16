@@ -9,6 +9,9 @@ export interface Env {
   SUPABASE_PUBLISHABLE_KEY?: string;
   SUPABASE_ANON_KEY?: string;
   SUPABASE_STORAGE_BUCKET?: string;
+  SUPABASE_ACCESS_TOKEN?: string;
+  SUPABASE_PROJECT_REF?: string;
+  DATABASE_URL?: string;
   ENVIRONMENT?: string;
   CORS_ORIGIN?: string;
 }

@@ -2,6 +2,7 @@
  * RBAC Repository
  *
  * Efficient Supabase queries for Roles, Members, and User Permissions.
+ * Uses trippy_ table prefixes for multi-app database safety.
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -11,11 +12,11 @@ export class RbacRepository {
   constructor(private supabase: SupabaseClient) {}
 
   /**
-   * Retrieves the system owner email from system_settings
+   * Retrieves the system owner email from trippy_system_settings
    */
   async getOwnerEmail(): Promise<string | null> {
     const { data, error } = await this.supabase
-      .from('system_settings')
+      .from('trippy_system_settings')
       .select('value')
       .eq('key', 'setup_status')
       .maybeSingle();
@@ -47,10 +48,10 @@ export class RbacRepository {
       };
     }
 
-    // Single query joining role_members and roles to retrieve assigned roles & permissions
+    // Query joining trippy_role_members and trippy_roles to retrieve assigned roles & permissions
     const { data, error } = await this.supabase
-      .from('role_members')
-      .select('role_id, roles(id, name, permissions)')
+      .from('trippy_role_members')
+      .select('role_id, trippy_roles(id, name, permissions)')
       .eq('email', normalizedEmail);
 
     if (error || !data) {
@@ -65,9 +66,8 @@ export class RbacRepository {
     const rolesSet = new Set<string>();
     const permissionsSet = new Set<string>();
 
-    for (const item of data) {
-      // Supabase join structure
-      const role = Array.isArray(item.roles) ? item.roles[0] : item.roles;
+    for (const item of data as any[]) {
+      const role = Array.isArray(item.trippy_roles) ? item.trippy_roles[0] : item.trippy_roles;
       if (role) {
         rolesSet.add(role.name || role.id);
         const perms: string[] = Array.isArray(role.permissions) ? role.permissions : [];
@@ -90,7 +90,7 @@ export class RbacRepository {
    */
   async listRoles(): Promise<Role[]> {
     const { data: roles, error: rolesError } = await this.supabase
-      .from('roles')
+      .from('trippy_roles')
       .select('id, name, description, permissions, created_at, updated_at')
       .order('created_at', { ascending: true });
 
@@ -98,7 +98,7 @@ export class RbacRepository {
     if (!roles || roles.length === 0) return [];
 
     const { data: members, error: membersError } = await this.supabase
-      .from('role_members')
+      .from('trippy_role_members')
       .select('role_id, email');
 
     if (membersError) throw membersError;
@@ -127,7 +127,7 @@ export class RbacRepository {
    */
   async getRoleById(id: string): Promise<Role | null> {
     const { data: role, error } = await this.supabase
-      .from('roles')
+      .from('trippy_roles')
       .select('*')
       .eq('id', id)
       .maybeSingle();
@@ -135,7 +135,7 @@ export class RbacRepository {
     if (error || !role) return null;
 
     const { data: members } = await this.supabase
-      .from('role_members')
+      .from('trippy_role_members')
       .select('email')
       .eq('role_id', id);
 
@@ -162,7 +162,7 @@ export class RbacRepository {
     const roleId = `role_${data.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now().toString(36)}`;
 
     const { data: role, error } = await this.supabase
-      .from('roles')
+      .from('trippy_roles')
       .insert({
         id: roleId,
         name: data.name,
@@ -181,7 +181,7 @@ export class RbacRepository {
       }));
 
       const { error: memberError } = await this.supabase
-        .from('role_members')
+        .from('trippy_role_members')
         .insert(rows);
 
       if (memberError) console.error('Error inserting role members:', memberError);
@@ -216,7 +216,7 @@ export class RbacRepository {
     if (data.permissions !== undefined) updates.permissions = data.permissions;
 
     const { data: role, error } = await this.supabase
-      .from('roles')
+      .from('trippy_roles')
       .update(updates)
       .eq('id', id)
       .select()
@@ -226,14 +226,14 @@ export class RbacRepository {
 
     if (data.emails !== undefined) {
       // Remove existing members and insert new list
-      await this.supabase.from('role_members').delete().eq('role_id', id);
+      await this.supabase.from('trippy_role_members').delete().eq('role_id', id);
 
       if (data.emails.length > 0) {
         const rows = data.emails.map((email) => ({
           role_id: id,
           email: email.toLowerCase().trim(),
         }));
-        await this.supabase.from('role_members').insert(rows);
+        await this.supabase.from('trippy_role_members').insert(rows);
       }
     }
 
@@ -245,7 +245,7 @@ export class RbacRepository {
    */
   async deleteRole(id: string): Promise<boolean> {
     // Delete role (cascade deletes role_members)
-    const { error } = await this.supabase.from('roles').delete().eq('id', id);
+    const { error } = await this.supabase.from('trippy_roles').delete().eq('id', id);
     if (error) throw error;
     return true;
   }

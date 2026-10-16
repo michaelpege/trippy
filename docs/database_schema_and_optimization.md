@@ -7,19 +7,21 @@ The user prompt specifies:
 
 To operate completely within Supabase's free tier (500 MB database, 2 CPU cores, 50,000 monthly active users, 1 GB storage), the schema is designed for maximum query speed and minimal compute consumption.
 
+All tables are prefixed with `trippy_` to safely coexist in shared Supabase projects (e.g. alongside other apps) without table name collisions or permission interference.
+
 ---
 
 ## Efficiency & Cost-Saving Optimizations
 
 1. **Strategic B-Tree Indexes**:
    - Every foreign key and filtered column has dedicated B-Tree indexes:
-     - `idx_places_type` on `places(type)`
-     - `idx_places_created_at` on `places(created_at DESC)`
-     - `idx_role_members_email` on `role_members(LOWER(email))`
-     - `idx_trip_places_trip_id` on `trip_places(trip_id)`
-     - `idx_trip_places_order` on `trip_places(trip_id, order_index ASC)`
-     - `idx_audit_roulette_id` on `roulette_audit_logs(roulette_id)`
-     - `idx_audit_created_at` on `roulette_audit_logs(created_at DESC)`
+     - `idx_trippy_places_type` on `trippy_places(type)`
+     - `idx_trippy_places_created_at` on `trippy_places(created_at DESC)`
+     - `idx_trippy_role_members_email` on `trippy_role_members(LOWER(email))`
+     - `idx_trippy_trip_places_trip_id` on `trippy_trip_places(trip_id)`
+     - `idx_trippy_trip_places_order` on `trippy_trip_places(trip_id, order_index ASC)`
+     - `idx_trippy_audit_roulette_id` on `trippy_audit_logs(roulette_id)`
+     - `idx_trippy_audit_created_at` on `trippy_audit_logs(created_at DESC)`
    - Avoids full-table sequential scans.
 
 2. **JSONB Denormalization for Candidate Snapshots & Files**:
@@ -27,7 +29,7 @@ To operate completely within Supabase's free tier (500 MB database, 2 CPU cores,
    - Eliminates complex joins and N+1 queries when rendering cards and candidate pools.
 
 3. **Batched Joining**:
-   - `trips` and `trip_places` are fetched in a single grouped query (`.in('trip_id', tripIds)`) rather than querying each trip's places sequentially.
+   - `trippy_trips` and `trippy_trip_places` are fetched in a single grouped query (`.in('trip_id', tripIds)`) rather than querying each trip's places sequentially.
 
 4. **Lean Column Selections & Pagination**:
    - Audit logs and lists default to `limit: 50` with offset pagination to keep memory usage low.
@@ -40,23 +42,23 @@ To operate completely within Supabase's free tier (500 MB database, 2 CPU cores,
 ## Schema Overview
 
 ```
-system_settings (key, value, created_at, updated_at)
+trippy_system_settings (key, value, created_at, updated_at)
        │
-roles (id, name, description, permissions)
+trippy_roles (id, name, description, permissions)
        │ (1 to N)
-role_members (id, role_id -> roles.id, email)
+trippy_role_members (id, role_id -> trippy_roles.id, email)
 
-places (id, name, type, description, address, gmaps_url, latitude, longitude, files)
+trippy_places (id, name, type, description, address, gmaps_url, latitude, longitude, files)
        │
        │ (1 to N)
-trip_places (id, trip_id -> trips.id, place_id -> places.id, order_index, visit_time, notes)
+trippy_trip_places (id, trip_id -> trippy_trips.id, place_id -> trippy_places.id, order_index, visit_time, notes)
        │
-trips (id, name, description, start_date, end_date)
+trippy_trips (id, name, description, start_date, end_date)
 
-roulettes (id, title, description, type, items, protection_type, allowed_emails, access_token)
+trippy_roulettes (id, title, description, type, items, protection_type, allowed_emails, access_token)
        │
        │ (1 to N, ON DELETE RESTRICT)
-roulette_audit_logs (id, roulette_id, roulette_title, type, selected_item_title, candidate_pool, executed_by_*)
+trippy_audit_logs (id, roulette_id, roulette_title, type, selected_item_title, candidate_pool, executed_by_*)
        ▲
-       └── (IMMUTABLE: Trigger strictly rejects DELETE and UPDATE)
+       │ (PostgreSQL trigger: prevent_trippy_audit_log_mutation() blocks all DELETE & UPDATE)
 ```

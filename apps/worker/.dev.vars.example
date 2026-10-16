@@ -2,8 +2,12 @@
 ENVIRONMENT=development
 CORS_ORIGIN=*
 
-# Supabase
+# Supabase Credentials
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SECRET_KEY=your-supabase-service-role-key
 SUPABASE_PUBLISHABLE_KEY=your-supabase-anon-key
 SUPABASE_STORAGE_BUCKET=trippy-files
+
+# Optional: Personal Access Token for 1-click automated migration via /setup
+# Generate at: https://supabase.com/dashboard/account/tokens
+SUPABASE_ACCESS_TOKEN=sbp_your_supabase_personal_access_token

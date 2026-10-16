@@ -15,7 +15,7 @@ export class PlacesRepository {
    */
   async listPlaces(options?: { type?: PlaceType; query?: string; limit?: number; offset?: number }): Promise<Place[]> {
     let query = this.supabase
-      .from('places')
+      .from('trippy_places')
       .select('id, name, type, description, address, gmaps_url, latitude, longitude, files, created_by, created_at, updated_at')
       .order('created_at', { ascending: false });
 
@@ -45,7 +45,7 @@ export class PlacesRepository {
    */
   async getPlaceById(id: string): Promise<Place | null> {
     const { data, error } = await this.supabase
-      .from('places')
+      .from('trippy_places')
       .select('*')
       .eq('id', id)
       .maybeSingle();
@@ -73,7 +73,7 @@ export class PlacesRepository {
     const placeId = `pl_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 7)}`;
 
     const { data: created, error } = await this.supabase
-      .from('places')
+      .from('trippy_places')
       .insert({
         id: placeId,
         name: data.name,
@@ -120,7 +120,7 @@ export class PlacesRepository {
     if (data.files !== undefined) updates.files = data.files;
 
     const { data: updated, error } = await this.supabase
-      .from('places')
+      .from('trippy_places')
       .update(updates)
       .eq('id', id)
       .select()
@@ -134,7 +134,7 @@ export class PlacesRepository {
    * Delete place
    */
   async deletePlace(id: string): Promise<boolean> {
-    const { error } = await this.supabase.from('places').delete().eq('id', id);
+    const { error } = await this.supabase.from('trippy_places').delete().eq('id', id);
     if (error) throw error;
     return true;
   }

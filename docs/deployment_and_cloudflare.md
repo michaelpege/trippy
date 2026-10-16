@@ -2,7 +2,7 @@
 
 ## Overview
 
-Trippy follows the architecture established in `michael-hub`:
+Trippy is engineered with a modern, decoupled serverless architecture:
 - **Frontend**: Next.js App Router with Static Export (`output: 'export'`) deployed to **Cloudflare Pages**.
 - **Backend API**: Serverless TypeScript service deployed to **Cloudflare Workers**.
 - **Database**: PostgreSQL hosted on **Supabase** (Free Tier).
@@ -57,7 +57,7 @@ wrangler pages deploy out --project-name=trippy
 
 ## 3. Automated GitHub Actions CI/CD
 
-Trippy includes automated CI/CD workflows modeled after `michael-hub`:
+Trippy includes automated CI/CD workflows for hands-off continuous delivery:
 
 ### CI (`.github/workflows/ci.yml`)
 - Triggers on PR and pushes to `main`.

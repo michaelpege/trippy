@@ -24,7 +24,7 @@ export class AuditRepository {
     const offset = options?.offset || 0;
 
     let query = this.supabase
-      .from('roulette_audit_logs')
+      .from('trippy_audit_logs')
       .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -50,7 +50,7 @@ export class AuditRepository {
    */
   async getLogById(id: string): Promise<RouletteAuditLog | null> {
     const { data, error } = await this.supabase
-      .from('roulette_audit_logs')
+      .from('trippy_audit_logs')
       .select('*')
       .eq('id', id)
       .maybeSingle();
