@@ -1,0 +1,9 @@
+# Local Cloudflare Worker Environment Variables (.dev.vars)
+ENVIRONMENT=development
+CORS_ORIGIN=*
+
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SECRET_KEY=your-supabase-service-role-key
+SUPABASE_PUBLISHABLE_KEY=your-supabase-anon-key
+SUPABASE_STORAGE_BUCKET=trippy-files

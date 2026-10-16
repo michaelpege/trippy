@@ -1,0 +1,24 @@
+{
+  "name": "trippy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smart Trip Planner with Places, Trips, Weighted Roulette, RBAC & Cloudflare Serverless Deployment",
+  "scripts": {
+    "dev": "concurrently \"pnpm:dev:*\"",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:worker": "pnpm --filter worker dev",
+    "build": "pnpm -r build",
+    "build:frontend": "pnpm --filter frontend build",
+    "build:worker": "pnpm --filter worker build",
+    "lint": "pnpm -r lint",
+    "type-check": "pnpm -r type-check",
+    "install:all": "pnpm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=8"
+  }
+}

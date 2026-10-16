@@ -1,0 +1,33 @@
+# Node & Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# Cloudflare Wrangler
+.wrangler/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# Test coverage
+coverage/
+
+# Go
+bin/
+*.exe
+apps/backend-go/trippy-server

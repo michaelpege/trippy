@@ -1,0 +1,14 @@
+name = "trippy-worker"
+main = "src/index.ts"
+compatibility_date = "2024-08-01"
+workers_dev = true
+
+[vars]
+ENVIRONMENT = "production"
+CORS_ORIGIN = "*"
+
+# Required Secrets (set via `wrangler secret put <KEY>`):
+# SUPABASE_URL - Your Supabase project URL (https://xyz.supabase.co)
+# SUPABASE_SECRET_KEY - Supabase Service Role Key (for server side)
+# SUPABASE_PUBLISHABLE_KEY - Supabase Anon/Publishable Key
+# SUPABASE_STORAGE_BUCKET - Storage bucket name (default: trippy-files)
