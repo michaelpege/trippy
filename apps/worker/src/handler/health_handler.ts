@@ -14,7 +14,7 @@ export class HealthHandler {
     try {
       if (env.SUPABASE_URL && (env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY)) {
         const supabase = getSupabaseClient(env);
-        const { error } = await supabase.from('system_settings').select('key').limit(1);
+        const { error } = await supabase.from('trippy_system_settings').select('key').limit(1);
         supabaseStatus = error ? `error: ${error.message}` : 'connected';
       }
     } catch (err) {
