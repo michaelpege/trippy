@@ -61,6 +61,11 @@ export const Navbar: React.FC = () => {
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
 
+  // The shared roulette route should only show the roulette and sign-in popup (no navbar)
+  if (pathname.startsWith('/roulette/share')) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-40 bg-white dark:bg-[#16191E] transition-colors duration-150 border-b-[3px] border-[#111111] dark:border-white">
       {/* Bauhaus Color DNA Strip */}
@@ -76,11 +81,11 @@ export const Navbar: React.FC = () => {
         <div className="flex justify-between h-16 items-center">
           {/* Logo & Brand */}
           <div className="flex items-center gap-6 sm:gap-8">
-            <Link href="/places" className="flex items-center gap-3 group">
-              {/* Bauhaus Constructivist Logo Mark */}
-              <div className="w-9 h-9 border-2 border-[#111111] dark:border-white bg-[#111111] dark:bg-white flex items-center justify-center relative overflow-hidden group-hover:bg-[#E63329] group-hover:border-[#E63329] transition-colors">
+            <Link href="/places" className="flex items-center gap-3">
+              {/* Bauhaus Constructivist Logo Mark (static, no hover color shift) */}
+              <div className="w-9 h-9 border-2 border-[#111111] dark:border-white bg-[#111111] dark:bg-white flex items-center justify-center relative overflow-hidden">
                 <span className="w-3.5 h-3.5 rounded-full bg-[#F5C800] absolute -top-1 -right-1" />
-                <span className="text-white dark:text-[#111111] font-black text-sm tracking-tight group-hover:text-white">
+                <span className="text-white dark:text-[#111111] font-black text-sm tracking-tight">
                   T
                 </span>
                 <span className="w-2 h-2 bg-[#E63329] dark:bg-[#1A3A6B] absolute -bottom-0.5 -left-0.5" />

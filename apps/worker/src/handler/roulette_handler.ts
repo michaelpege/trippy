@@ -7,6 +7,7 @@
 
 import { getSupabaseClient } from '../client/supabase_client';
 import { RouletteRepository } from '../repository/roulette_repository';
+import { AuditRepository } from '../repository/audit_repository';
 import { RbacRepository } from '../repository/rbac_repository';
 import { GoogleClient } from '../client/google_client';
 import { jsonResponse, errorResponse } from '../middleware/cors';
@@ -200,7 +201,8 @@ export class RouletteHandler {
 
   /**
    * GET /api/roulettes/share/:id
-   * Validates access protection (Google OAuth or Static Token) and returns roulette details.
+   * Returns roulette details, its last updated timestamp, and the audit logs of the last 5 runs.
+   * If unauthenticated, requiresAuth is set to true so the client can prompt the sign-in modal.
    */
   async getSharedRoulette(request: Request, env: Env, corsConfig: CorsConfig, id: string): Promise<Response> {
     try {
@@ -217,9 +219,10 @@ export class RouletteHandler {
       }
 
       const authResult = await this.authenticateSharedAccess(request, roulette, env);
-      if (!authResult.allowed) {
-        return errorResponse(authResult.error || 'Access denied', authResult.status || 403, corsConfig);
-      }
+
+      // Fetch the last 5 runs from the audit repository
+      const auditRepo = new AuditRepository(supabase);
+      const auditRes = await auditRepo.listLogs({ rouletteId: id, limit: 5 });
 
       // Return sanitized payload for participants (hide internal secret access_token)
       return jsonResponse(
@@ -231,8 +234,13 @@ export class RouletteHandler {
             type: roulette.type,
             items: roulette.items,
             protection_type: roulette.protection_type,
+            updated_at: roulette.updated_at || roulette.created_at,
+            created_at: roulette.created_at,
           },
-          authenticatedAs: authResult.identifier,
+          last5Runs: auditRes.logs,
+          authenticatedAs: authResult.allowed ? authResult.identifier : null,
+          requiresAuth: !authResult.allowed,
+          protectionType: roulette.protection_type,
         },
         200,
         corsConfig
@@ -263,7 +271,7 @@ export class RouletteHandler {
 
       const authResult = await this.authenticateSharedAccess(request, roulette, env);
       if (!authResult.allowed) {
-        return errorResponse(authResult.error || 'Access denied', authResult.status || 403, corsConfig);
+        return errorResponse(authResult.error || 'Access denied: Sign in required to spin', authResult.status || 401, corsConfig);
       }
 
       const clientIp = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
@@ -279,6 +287,7 @@ export class RouletteHandler {
       return jsonResponse(
         {
           winner: result.selectedItem,
+          auditLog: result.auditLog,
           auditLogId: result.auditLog.id,
           executedAt: result.auditLog.created_at,
           message: `Roulette spun successfully! Winner: ${result.selectedItem.title}`,

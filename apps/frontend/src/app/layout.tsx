@@ -3,6 +3,7 @@ import './globals.css';
 import { ToastProvider } from '@/components/common/Toast';
 import { ThemeProvider } from '@/components/common/ThemeProvider';
 import { Navbar } from '@/components/common/Navbar';
+import { AuthGuard } from '@/components/common/AuthGuard';
 
 export const metadata: Metadata = {
   title: 'Trippy - Trip Planning & Roulette App',
@@ -40,10 +41,12 @@ export default function RootLayout({
       <body className="min-h-screen bg-[#F7F5F0] text-[#111111] dark:bg-[#0E1013] dark:text-[#F7F5F0] antialiased selection:bg-[#E63329] selection:text-white transition-colors duration-150">
         <ThemeProvider>
           <ToastProvider>
-            <Navbar />
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-              {children}
-            </main>
+            <AuthGuard>
+              <Navbar />
+              <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+                {children}
+              </main>
+            </AuthGuard>
           </ToastProvider>
         </ThemeProvider>
       </body>

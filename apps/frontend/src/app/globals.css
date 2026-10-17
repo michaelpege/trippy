@@ -63,38 +63,70 @@ body {
   white-space: nowrap;
 }
 
-/* Corner Rules */
-.corner-rule-red {
+/* Corner Rules
+   Support both:
+   1. Dedicated empty child elements: <div className="corner-rule-red" />
+   2. Container card class: <div className="... corner-rule-red relative ...">
+*/
+.corner-rule-red:empty,
+.corner-rule-blue:empty,
+.corner-rule-yellow:empty {
   position: absolute;
   top: 0;
   left: 0;
   width: 20px;
   height: 20px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.corner-rule-red:empty {
   border-top: 3px solid #E63329;
   border-left: 3px solid #E63329;
-  pointer-events: none;
 }
 
-.corner-rule-blue {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 20px;
-  height: 20px;
+.corner-rule-blue:empty {
   border-top: 3px solid #1A3A6B;
   border-left: 3px solid #1A3A6B;
-  pointer-events: none;
 }
 
-.corner-rule-yellow {
+.corner-rule-yellow:empty {
+  border-top: 3px solid #F5C800;
+  border-left: 3px solid #F5C800;
+}
+
+.corner-rule-red:not(:empty),
+.corner-rule-blue:not(:empty),
+.corner-rule-yellow:not(:empty) {
+  position: relative;
+}
+
+.corner-rule-red:not(:empty)::before,
+.corner-rule-blue:not(:empty)::before,
+.corner-rule-yellow:not(:empty)::before {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 20px;
   height: 20px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.corner-rule-red:not(:empty)::before {
+  border-top: 3px solid #E63329;
+  border-left: 3px solid #E63329;
+}
+
+.corner-rule-blue:not(:empty)::before {
+  border-top: 3px solid #1A3A6B;
+  border-left: 3px solid #1A3A6B;
+}
+
+.corner-rule-yellow:not(:empty)::before {
   border-top: 3px solid #F5C800;
   border-left: 3px solid #F5C800;
-  pointer-events: none;
 }
 
 /* Flat High-Contrast Scrollbars */

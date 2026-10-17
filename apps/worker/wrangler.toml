@@ -9,6 +9,7 @@ routes = [
 
 [vars]
 ENVIRONMENT = "production"
+NODE_ENV = "production"
 CORS_ORIGIN = "*"
 
 # Required Secrets (set via `wrangler secret put <KEY>`):

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Compass, ShieldCheck, LogIn, AlertCircle, ArrowRight, LogOut, CheckCircle2 } from 'lucide-react';
+import { Compass, ShieldCheck, AlertCircle, ArrowRight, LogOut, CheckCircle2 } from 'lucide-react';
 import { saveSession, clearSession, loadGoogleScript, getCurrentUser, type UserSession } from '@/lib/auth';
 import { getCurrentUserProfile } from '@/lib/api';
 import { useToast } from '@/components/common/Toast';
@@ -16,7 +16,6 @@ export default function LoginPage() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  const [devEmail, setDevEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [gisLoaded, setGisLoaded] = useState(false);
 
@@ -85,51 +84,6 @@ export default function LoginPage() {
       router.push('/places');
     } catch (err: any) {
       const msg = err.message || 'Access denied: Your Google account is not registered in RBAC.';
-      setAuthError(msg);
-      toast.error(msg);
-      clearSession();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDevLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const targetEmail = devEmail.trim().toLowerCase();
-    if (!targetEmail || !targetEmail.includes('@')) {
-      toast.error('Enter a valid email address.');
-      return;
-    }
-
-    setLoading(true);
-    setAuthError(null);
-    try {
-      // Craft development mock JWT token
-      const header = btoa(JSON.stringify({ alg: 'none', typ: 'JWT' }))
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-      const payload = btoa(
-        JSON.stringify({
-          email: targetEmail,
-          name: targetEmail.split('@')[0],
-          iss: 'accounts.google.com',
-          exp: Math.floor(Date.now() / 1000) + 86400 * 7,
-        })
-      )
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-
-      const mockToken = `${header}.${payload}.signature`;
-
-      saveSession(mockToken, targetEmail, targetEmail.split('@')[0]);
-
-      const me = await getCurrentUserProfile();
-      toast.success(`Logged in as ${me.user.email} (${me.user.roles.join(', ')})`);
-      router.push('/places');
-    } catch (err: any) {
-      const msg = err.message || 'Sign in failed. Ensure email is listed in roles or registered as owner.';
       setAuthError(msg);
       toast.error(msg);
       clearSession();
@@ -227,51 +181,7 @@ export default function LoginPage() {
         </button>
       </div>
 
-      {/* Alternative Dev / Direct Email Login for Testing */}
-      <div className="mt-8 pt-6 border-t-2 border-[#111111] dark:border-[#FFFFFF]">
-        <div className="flex items-center gap-2 justify-center text-[10px] font-mono font-black text-[#888888] uppercase tracking-widest mb-3">
-          <span>// QUICK OPERATOR OVERRIDE //</span>
-        </div>
-
-        <form onSubmit={handleDevLogin} className="space-y-3">
-          <div className="space-y-1 text-left">
-            <input
-              type="email"
-              value={devEmail}
-              onChange={(e) => setDevEmail(e.target.value)}
-              placeholder="mpg066@gmail.com"
-              className="w-full px-3.5 py-2.5 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-mono font-bold focus:outline-none focus:border-[#E63329] bg-[#F7F5F0] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF]"
-            />
-            <div className="flex justify-between items-center pt-0.5 text-[10px] font-mono text-[#888888]">
-              <span>Owner: mpg066@gmail.com</span>
-              <button
-                type="button"
-                onClick={() => setDevEmail('mpg066@gmail.com')}
-                className="text-[#1A3A6B] dark:text-[#F5C800] font-black uppercase hover:underline"
-              >
-                Use Owner
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-[#F5C800] hover:bg-[#111111] hover:text-[#F5C800] text-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] font-black uppercase tracking-wider text-xs rounded-none transition flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {loading ? (
-              <div className="w-4 h-4 border-2 border-[#111111] border-t-transparent animate-spin rounded-none" />
-            ) : (
-              <>
-                <LogIn className="w-4 h-4" />
-                <span>Sign In with Email</span>
-              </>
-            )}
-          </button>
-        </form>
-      </div>
-
-      <div className="mt-6 p-3 bg-[#F7F5F0] dark:bg-[#111111] rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-[11px] font-mono text-[#888888] flex items-start gap-2.5 text-left">
+      <div className="mt-8 p-3.5 bg-[#F7F5F0] dark:bg-[#111111] rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-[11px] font-mono text-[#888888] flex items-start gap-2.5 text-left">
         <ShieldCheck className="w-4 h-4 text-[#1A3A6B] dark:text-[#F5C800] flex-shrink-0 mt-0.5" />
         <span>
           Access policy enforced at Cloudflare edge worker. Only identities present in database roles can authenticate.

@@ -250,8 +250,14 @@ export async function fetchSharedRoulette(
   id: string,
   options?: { token?: string; googleToken?: string }
 ): Promise<{
-  roulette: Pick<Roulette, 'id' | 'title' | 'description' | 'type' | 'items' | 'protection_type'>;
-  authenticatedAs: string;
+  roulette: Pick<
+    Roulette,
+    'id' | 'title' | 'description' | 'type' | 'items' | 'protection_type' | 'updated_at' | 'created_at'
+  >;
+  last5Runs: RouletteAuditLog[];
+  authenticatedAs: string | null;
+  requiresAuth: boolean;
+  protectionType: 'google' | 'token';
 }> {
   const headers: Record<string, string> = {};
   if (options?.token) {
@@ -269,6 +275,7 @@ export async function spinSharedRoulette(
   options?: { token?: string; googleToken?: string }
 ): Promise<{
   winner: RouletteItem;
+  auditLog?: RouletteAuditLog;
   auditLogId: string;
   executedAt: string;
   message: string;
