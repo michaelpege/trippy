@@ -125,17 +125,40 @@ export function clearSession(): void {
   window.dispatchEvent(new Event('auth-state-changed'));
 }
 
-/**
- * Load Google Identity Services SDK script dynamically
- */
 export function loadGoogleScript(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (typeof window === 'undefined') return resolve();
     if (window.google?.accounts?.id) return resolve();
 
-    const existing = document.getElementById('google-client-script');
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (window.google?.accounts?.id) {
+        clearInterval(interval);
+        resolve();
+      } else if (attempts >= 40) {
+        // 2 seconds elapsed
+        clearInterval(interval);
+        resolve();
+      }
+    }, 50);
+
+    const existing =
+      (document.getElementById('google-client-script') as HTMLScriptElement | null) ||
+      (document.querySelector('script[src*="accounts.google.com/gsi/client"]') as HTMLScriptElement | null);
+
     if (existing) {
-      existing.addEventListener('load', () => resolve());
+      if ((existing as any).readyState === 'loaded' || (existing as any).readyState === 'complete') {
+        // Already loaded, interval will catch window.google.accounts.id
+        return;
+      }
+      existing.addEventListener('load', () => {
+        // Give small tick for global object assignment
+        setTimeout(() => {
+          clearInterval(interval);
+          resolve();
+        }, 50);
+      });
       return;
     }
 
@@ -144,8 +167,16 @@ export function loadGoogleScript(): Promise<void> {
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.defer = true;
-    script.onload = () => resolve();
-    script.onerror = (err) => reject(err);
+    script.onload = () => {
+      setTimeout(() => {
+        clearInterval(interval);
+        resolve();
+      }, 50);
+    };
+    script.onerror = (err) => {
+      clearInterval(interval);
+      reject(err);
+    };
     document.head.appendChild(script);
   });
 }

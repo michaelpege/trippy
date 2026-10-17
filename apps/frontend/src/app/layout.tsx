@@ -20,7 +20,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon.svg" />
-        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <script id="google-client-script" src="https://accounts.google.com/gsi/client" async defer></script>
         {/* Anti-FOUC theme detector */}
         <script
           dangerouslySetInnerHTML={{
