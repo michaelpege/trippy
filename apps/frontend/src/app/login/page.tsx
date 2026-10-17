@@ -18,7 +18,7 @@ export default function LoginPage() {
 
   const clientId =
     process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
-    '500705610156-ehmf5i84m847f9k58r4i1eavaqi3t6dm.apps.googleusercontent.com';
+    '500705610156-2j6108eea4i6242mtf5reb0uoj6jrvqq.apps.googleusercontent.com';
 
   useEffect(() => {
     // If already logged in

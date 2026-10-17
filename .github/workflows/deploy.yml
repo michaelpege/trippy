@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
     paths:
       - 'apps/**'
       - 'supabase/**'
@@ -86,8 +86,8 @@ jobs:
       - name: Build Static Export
         run: pnpm build
         env:
-          NEXT_PUBLIC_WORKER_URL: ${{ secrets.NEXT_PUBLIC_WORKER_URL || 'https://trippy-worker.workers.dev' }}
-          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+          NEXT_PUBLIC_WORKER_URL: ${{ secrets.NEXT_PUBLIC_WORKER_URL || 'https://api.trippy.michaelpege.com' }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '500705610156-2j6108eea4i6242mtf5reb0uoj6jrvqq.apps.googleusercontent.com' }}
 
       - name: Deploy to Cloudflare Pages
         run: pnpm exec wrangler pages deploy out --project-name=trippy --commit-dirty=true
