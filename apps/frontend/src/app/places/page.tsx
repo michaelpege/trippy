@@ -75,73 +75,119 @@ export default function PlacesPage() {
 
   const handleDeletePlace = async (id: string) => {
     await deletePlace(id);
-    toast.success('Place deleted successfully.');
+    toast.success('Place deleted.');
     await loadPlaces();
   };
 
-  const typeTabs = ['All', 'Restaurant', 'Mall', 'Public spaces', 'other'];
+  const typeTabs: { label: string; value: string; color?: string }[] = [
+    { label: 'ALL', value: 'All' },
+    { label: 'RESTAURANTS', value: 'Restaurant', color: '#E63329' },
+    { label: 'MALLS', value: 'Mall', color: '#1A3A6B' },
+    { label: 'PUBLIC SPACES', value: 'Public spaces', color: '#F5C800' },
+    { label: 'OTHER', value: 'other' },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-8">
+      {/* Page Header: Bauhaus Architectural Structure */}
+      <div className="border-b-[3px] border-[#111111] dark:border-white pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Places</h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage destinations, restaurants, malls, public spots, directions, and files
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-3 h-3 bg-[#E63329]" />
+            <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-[#888888]">
+              DIRECTORY // ARCHIVE
+            </span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#111111] dark:text-white leading-none">
+            CURATED PLACES
+          </h1>
+          <p className="mt-2 text-xs text-[#555555] dark:text-[#A0A5B0]">
+            Database of indexed locations, GPS coordinates, navigation routes, and media attachments.
           </p>
         </div>
 
         <button
           onClick={handleOpenCreate}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20 transition self-start sm:self-auto text-sm"
+          className="px-5 py-2.5 bg-[#E63329] hover:bg-[#C22921] text-white text-xs font-black uppercase tracking-widest border-2 border-[#111111] dark:border-white transition-colors flex items-center gap-2 self-start md:self-auto shrink-0"
         >
           <Plus className="w-4 h-4" />
-          <span>Add Place</span>
+          <span>ADD PLACE</span>
         </button>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Type Filter Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
-          {typeTabs.map((t) => (
-            <button
-              key={t}
-              onClick={() => setSelectedType(t)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${
-                selectedType === t
-                  ? 'bg-slate-900 dark:bg-emerald-600 text-white shadow-sm'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
+      {/* Control Bar: Filters & Search */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+        {/* Architectural Filter Tab Strip */}
+        <div className="flex flex-wrap items-stretch border-2 border-[#111111] dark:border-white bg-white dark:bg-[#16191E] divide-x-2 divide-[#111111] dark:divide-white">
+          {typeTabs.map((tab) => {
+            const isSelected = selectedType === tab.value;
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setSelectedType(tab.value)}
+                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
+                  isSelected
+                    ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111]'
+                    : 'text-[#888888] hover:bg-[#F5C800] hover:text-[#111111] dark:hover:bg-[#F5C800] dark:hover:text-[#111111]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Search Input */}
-        <form onSubmit={handleSearchSubmit} className="relative w-full md:w-72">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search places by name..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-          />
-          <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5" />
+        <form onSubmit={handleSearchSubmit} className="flex items-center gap-0 max-w-md w-full">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="SEARCH PLACES..."
+              className="w-full px-4 py-2 bg-white dark:bg-[#16191E] border-2 border-[#111111] dark:border-white text-xs font-mono uppercase text-[#111111] dark:text-white placeholder-[#888888] focus:outline-none focus:bg-[#FFFDE6] dark:focus:bg-[#20242B]"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-[#111111] dark:bg-white text-white dark:text-[#111111] hover:bg-[#E63329] dark:hover:bg-[#E63329] dark:hover:text-white border-2 border-l-0 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider transition-colors flex items-center gap-1.5"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span>FIND</span>
+          </button>
         </form>
       </div>
 
       {/* Places Grid */}
       {loading ? (
-        <div className="min-h-[40vh] flex items-center justify-center">
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs text-slate-400 dark:text-slate-500">Loading places...</p>
-          </div>
+        <div className="min-h-[40vh] flex flex-col items-center justify-center border-2 border-dashed border-[#111111]/30 dark:border-white/30 p-12">
+          <div className="w-8 h-8 border-3 border-[#E63329] border-t-transparent animate-spin mb-4" />
+          <p className="text-xs font-mono uppercase tracking-widest text-[#888888]">
+            INDEXING PLACES DATABASE...
+          </p>
         </div>
-      ) : places.length > 0 ? (
+      ) : places.length === 0 ? (
+        <div className="min-h-[40vh] flex flex-col items-center justify-center border-[3px] border-[#111111] dark:border-white p-12 text-center bg-white dark:bg-[#16191E]">
+          <div className="w-12 h-12 border-2 border-[#111111] dark:border-white bg-[#F5C800] text-[#111111] flex items-center justify-center mb-4 font-black">
+            !
+          </div>
+          <h3 className="text-base font-black uppercase tracking-wider text-[#111111] dark:text-white">
+            NO PLACES RECORDED
+          </h3>
+          <p className="mt-1 text-xs text-[#555555] dark:text-[#A0A5B0] max-w-sm">
+            {selectedType !== 'All' || searchQuery
+              ? 'No places matching the specified category and search parameters.'
+              : 'The places directory is empty. Create your first curated place.'}
+          </p>
+          <button
+            onClick={handleOpenCreate}
+            className="mt-6 px-5 py-2.5 bg-[#E63329] hover:bg-[#C22921] text-white text-xs font-black uppercase tracking-widest border-2 border-[#111111] dark:border-white transition-colors flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>CREATE FIRST PLACE</span>
+          </button>
+        </div>
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {places.map((place) => (
             <PlaceCard
@@ -152,26 +198,9 @@ export default function PlacesPage() {
             />
           ))}
         </div>
-      ) : (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 p-12 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto mb-3">
-            <MapPin className="w-6 h-6" />
-          </div>
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">No places found</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-            {searchQuery || selectedType !== 'All'
-              ? 'Try adjusting your search query or filter.'
-              : 'Start by creating your first place with directions and static attachments.'}
-          </p>
-          <button
-            onClick={handleOpenCreate}
-            className="mt-4 px-4 py-2 bg-emerald-600 text-white font-semibold text-xs rounded-xl hover:bg-emerald-700 transition"
-          >
-            Create Place Now
-          </button>
-        </div>
       )}
 
+      {/* Place Create/Edit Modal */}
       <PlaceFormModal
         isOpen={isFormOpen}
         placeToEdit={editingPlace}

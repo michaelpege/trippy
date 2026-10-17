@@ -120,9 +120,11 @@ function SharedRouletteContent() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-slate-400 dark:text-slate-500">Verifying access...</p>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-[3px] border-[#111111] dark:border-[#FFFFFF] border-t-[#E63329] animate-spin rounded-none" />
+          <p className="text-xs font-mono font-black uppercase tracking-widest text-[#888888]">
+            [VERIFYING ACCESS PROTOCOL...]
+          </p>
         </div>
       </div>
     );
@@ -131,42 +133,47 @@ function SharedRouletteContent() {
   // Not authorized / password prompt needed
   if (!roulette) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden p-8 text-center animate-in fade-in">
-        <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-4">
-          <Lock className="w-7 h-7" />
+      <div className="max-w-md mx-auto my-12 bg-[#FFFFFF] dark:bg-[#0E1013] border-[3px] border-[#111111] dark:border-[#FFFFFF] corner-rule-red rounded-none p-8 text-center">
+        <div className="w-12 h-12 border-2 border-[#111111] dark:border-[#FFFFFF] bg-[#E63329] text-white flex items-center justify-center mx-auto mb-4">
+          <Lock className="w-6 h-6" />
         </div>
 
-        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Protected Roulette</h1>
-        <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
-          This roulette requires authorization before you can view candidates or spin the wheel.
+        <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#E63329]">
+          [SECURITY GATE // ACCESS RESTRICTED]
+        </span>
+        <h1 className="text-2xl font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF] mt-1">
+          Protected Roulette
+        </h1>
+        <p className="mt-2 text-xs text-[#888888] font-mono max-w-xs mx-auto leading-relaxed">
+          Authorization required before candidates and wheel spin controls can be unlocked.
         </p>
 
         {authError && (
-          <div className="mt-4 p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900 rounded-xl text-xs flex items-center gap-2 text-left">
+          <div className="mt-4 p-3 bg-[#E63329]/10 text-[#E63329] border-2 border-[#E63329] rounded-none text-xs font-mono flex items-center gap-2 text-left">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>{authError}</span>
+            <span className="font-bold">{authError}</span>
           </div>
         )}
 
         {/* Static Passcode / Token Input Form */}
-        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-4">
+        <div className="mt-6 pt-5 border-t-2 border-[#111111] dark:border-[#FFFFFF] space-y-5">
           <form onSubmit={handlePasscodeSubmit} className="space-y-3">
             <div className="text-left">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                Have a Passcode / Token?
+              <label className="block text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] mb-1">
+                Enter Shared Passcode Token
               </label>
               <input
                 type="text"
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
-                placeholder="Enter passcode..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+                placeholder="PASSCODE TOKEN..."
+                className="w-full px-3.5 py-2.5 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-mono font-bold focus:outline-none focus:border-[#E63329] bg-[#F7F5F0] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase"
               />
             </div>
             <button
               type="submit"
               disabled={submittingToken}
-              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2"
+              className="w-full py-3 bg-[#F5C800] hover:bg-[#111111] hover:text-[#F5C800] text-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] font-black uppercase tracking-wider text-xs rounded-none transition flex items-center justify-center gap-2"
             >
               <KeyRound className="w-4 h-4" />
               <span>Unlock with Passcode</span>
@@ -174,9 +181,9 @@ function SharedRouletteContent() {
           </form>
 
           {/* Or Google Sign In */}
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
-              Or Sign In with Authorized Gmail
+          <div className="pt-5 border-t-2 border-[#111111] dark:border-[#FFFFFF]">
+            <p className="text-[10px] font-mono font-black uppercase tracking-widest text-[#888888] mb-3">
+              // OR AUTHORIZE VIA GOOGLE GIS //
             </p>
             <div className="flex justify-center min-h-[44px]">
               <div ref={googleBtnRef} />
@@ -191,13 +198,17 @@ function SharedRouletteContent() {
   return (
     <div className="max-w-2xl mx-auto my-6 space-y-6">
       <div className="text-center">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 mb-2">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          Authorized as: {authenticatedAs}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-[11px] font-mono font-black uppercase tracking-wider bg-[#F5C800] text-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] mb-3">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#111111]" />
+          Authorized User: {authenticatedAs}
         </div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{roulette.title}</h1>
+        <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF]">
+          {roulette.title}
+        </h1>
         {roulette.description && (
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300 max-w-lg mx-auto">{roulette.description}</p>
+          <p className="mt-1.5 text-xs sm:text-sm text-[#888888] font-mono max-w-lg mx-auto">
+            {roulette.description}
+          </p>
         )}
       </div>
 
@@ -206,8 +217,9 @@ function SharedRouletteContent() {
         onSpinRequest={handleSharedSpin}
       />
 
-      <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs text-center text-xs text-slate-500 dark:text-slate-400">
-        🛡️ Every spin result is permanently logged in the Trippy database execution audit trail.
+      <div className="p-4 bg-[#FFFFFF] dark:bg-[#0E1013] rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-center text-xs font-mono text-[#888888] flex items-center justify-center gap-2">
+        <ShieldCheck className="w-4 h-4 text-[#1A3A6B] dark:text-[#F5C800] flex-shrink-0" />
+        <span>Every spin execution is cryptographically written into the permanent immutable audit ledger.</span>
       </div>
     </div>
   );
@@ -218,7 +230,7 @@ export default function SharedRoulettePage() {
     <Suspense
       fallback={
         <div className="min-h-[50vh] flex items-center justify-center">
-          <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-[3px] border-[#111111] dark:border-[#FFFFFF] border-t-[#E63329] animate-spin rounded-none" />
         </div>
       }
     >

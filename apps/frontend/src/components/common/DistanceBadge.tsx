@@ -57,31 +57,31 @@ export const DistanceBadge: React.FC<DistanceBadgeProps> = ({ place, compact = f
   return (
     <div className="flex flex-wrap items-center gap-2">
       {estimate ? (
-        <div className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800 rounded-xl px-2.5 py-1.5 shadow-xs">
-          <div className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-bold">
+        <div className="flex items-center gap-2 text-[11px] font-mono font-bold text-[#111111] dark:text-white bg-[#F7F5F0] dark:bg-[#20242B] border-2 border-[#111111] dark:border-white px-2.5 py-1">
+          <div className="flex items-center gap-1 text-[#E63329]">
             <MapPin className="w-3.5 h-3.5" />
-            <span>{estimate.distanceKm} km</span>
+            <span>{estimate.distanceKm} KM</span>
           </div>
-          <span className="text-slate-300 dark:text-slate-700">|</span>
+          <span className="text-[#888888]">/</span>
           <div
-            className="flex items-center gap-1 text-slate-600 dark:text-slate-300"
+            className="flex items-center gap-1 text-[#1A3A6B] dark:text-[#F5C800]"
             title="Estimated time by car"
           >
-            <Car className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
-            <span>{estimate.carMinutes} min</span>
+            <Car className="w-3.5 h-3.5" />
+            <span>{estimate.carMinutes}M CAR</span>
           </div>
-          <span className="text-slate-300 dark:text-slate-700">|</span>
+          <span className="text-[#888888]">/</span>
           <div
-            className="flex items-center gap-1 text-slate-600 dark:text-slate-300"
+            className="flex items-center gap-1 text-[#111111] dark:text-white"
             title="Estimated time by motorcycle"
           >
-            <Bike className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-            <span>{estimate.motorcycleMinutes} min</span>
+            <Bike className="w-3.5 h-3.5" />
+            <span>{estimate.motorcycleMinutes}M MOTO</span>
           </div>
         </div>
       ) : locating ? (
-        <span className="text-xs text-slate-400 dark:text-slate-500 animate-pulse flex items-center gap-1">
-          <Navigation className="w-3 h-3 animate-spin" /> Calculating route...
+        <span className="text-[10px] font-mono uppercase tracking-wider text-[#888888] animate-pulse flex items-center gap-1">
+          <Navigation className="w-3 h-3 animate-spin" /> LOCATING...
         </span>
       ) : null}
 
@@ -89,16 +89,16 @@ export const DistanceBadge: React.FC<DistanceBadgeProps> = ({ place, compact = f
         href={routeUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className={`inline-flex items-center gap-1.5 text-xs font-semibold rounded-xl transition shadow-sm ${
+        className={`inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider transition-colors border-2 ${
           compact
-            ? 'px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800'
-            : 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white active:scale-95'
+            ? 'px-2.5 py-1 bg-white dark:bg-[#16191E] text-[#111111] dark:text-white border-[#111111] dark:border-white hover:bg-[#F5C800] hover:text-[#111111]'
+            : 'px-3 py-1.5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white hover:bg-[#E63329] dark:hover:bg-[#E63329] dark:hover:text-white hover:border-[#E63329]'
         }`}
-        title="Open route directions from current location in Google Maps"
+        title="Open route directions in Google Maps"
       >
         <Navigation className="w-3.5 h-3.5" />
-        <span>Directions</span>
-        <ExternalLink className="w-3 h-3 opacity-70" />
+        <span>ROUTE</span>
+        <ExternalLink className="w-3 h-3 opacity-60" />
       </a>
     </div>
   );

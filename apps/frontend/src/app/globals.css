@@ -2,50 +2,113 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   Bauhaus / Swiss Modern Design System Tokens & Base
+   Form follows function. Grid is law. Color is structure.
+   ========================================================================== */
+
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --bg-page: #F7F5F0;
+  --fg-text: #111111;
+  --border-struct: #111111;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #EEEEEE;
+  
+  --bauhaus-red: #E63329;
+  --bauhaus-blue: #1A3A6B;
+  --bauhaus-yellow: #F5C800;
+  --bauhaus-black: #111111;
+  --bauhaus-white: #FFFFFF;
+  --bauhaus-gray: #888888;
 }
 
 .dark {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --bg-page: #0E1013;
+  --fg-text: #F7F5F0;
+  --border-struct: #FFFFFF;
+  --surface-card: #16191E;
+  --surface-subtle: #20242B;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--fg-text);
+  background-color: var(--bg-page);
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", Arial, sans-serif;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbars */
-::-webkit-scrollbar {
-  width: 8px;
+/* Color DNA Signature Strip: Red · Blue · Yellow · Black · White */
+.color-dna {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   height: 8px;
+  width: 100%;
+}
+.color-dna .c1 { background-color: #E63329; }
+.color-dna .c2 { background-color: #1A3A6B; }
+.color-dna .c3 { background-color: #F5C800; }
+.color-dna .c4 { background-color: #111111; }
+.color-dna .c5 { background-color: #FFFFFF; }
+.dark .color-dna .c5 { background-color: #333333; }
+
+/* Vertical Type Label (Constructivist Rail) */
+.vertical-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
+/* Corner Rules */
+.corner-rule-red {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-top: 3px solid #E63329;
+  border-left: 3px solid #E63329;
+  pointer-events: none;
+}
+
+.corner-rule-blue {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-top: 3px solid #1A3A6B;
+  border-left: 3px solid #1A3A6B;
+  pointer-events: none;
+}
+
+.corner-rule-yellow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-top: 3px solid #F5C800;
+  border-left: 3px solid #F5C800;
+  pointer-events: none;
+}
+
+/* Flat High-Contrast Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--bg-page);
+  border-left: 1px solid var(--border-struct);
 }
-
-.dark ::-webkit-scrollbar-track {
-  background: #0f172a;
-}
-
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: #111111;
 }
-
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #E63329;
 }

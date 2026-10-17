@@ -64,42 +64,39 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
       if (loc) {
         setLatitude(String(loc.latitude));
         setLongitude(String(loc.longitude));
-        toast.success(`Coordinates: ${loc.latitude.toFixed(5)}, ${loc.longitude.toFixed(5)}`);
+        toast.success(`Coordinates acquired: ${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}`);
       } else {
-        toast.error('Unable to retrieve location. Please check browser permissions.');
+        toast.error('Unable to acquire GPS coordinates.');
       }
-    } catch {
-      toast.error('Failed to get current location.');
     } finally {
       setIsLocating(false);
     }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFiles = e.target.files;
-    if (!uploadedFiles || uploadedFiles.length === 0) return;
+    const selected = e.target.files;
+    if (!selected || selected.length === 0) return;
 
     setIsUploading(true);
     try {
-      for (let i = 0; i < uploadedFiles.length; i++) {
-        const f = uploadedFiles[i];
-        const res = await uploadPlaceFile(f);
+      for (let i = 0; i < selected.length; i++) {
+        const file = selected[i];
+        const res = await uploadPlaceFile(file);
         setFiles((prev) => [...prev, res.file]);
       }
-      toast.success('File(s) uploaded successfully.');
+      toast.success('Files uploaded.');
     } catch (err: any) {
       toast.error(err.message || 'File upload failed.');
     } finally {
       setIsUploading(false);
-      e.target.value = '';
     }
   };
 
-  const handleRemoveFile = (fileId: string) => {
-    setFiles((prev) => prev.filter((f) => f.id !== fileId));
+  const handleRemoveFile = (id: string) => {
+    setFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleSubmitForm = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       toast.error('Place name is required.');
@@ -111,20 +108,24 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
   const handleConfirmSave = async () => {
     setIsSubmitting(true);
     try {
+      const latNum = latitude.trim() ? parseFloat(latitude) : null;
+      const lngNum = longitude.trim() ? parseFloat(longitude) : null;
+
       await onSave({
         name: name.trim(),
         type,
-        description: description.trim(),
-        address: address.trim(),
-        gmaps_url: gmapsUrl.trim(),
-        latitude: latitude ? parseFloat(latitude) : null,
-        longitude: longitude ? parseFloat(longitude) : null,
+        description: description.trim() || undefined,
+        address: address.trim() || undefined,
+        gmaps_url: gmapsUrl.trim() || undefined,
+        latitude: isNaN(latNum as any) ? null : latNum,
+        longitude: isNaN(lngNum as any) ? null : lngNum,
         files,
       });
+
       setShowConfirm(false);
       onClose();
     } catch (err: any) {
-      toast.error(err.message || 'Failed to save place.');
+      toast.error(err.message || 'Save failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -134,255 +135,244 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-        <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden my-6">
-          {/* Header */}
-          <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 animate-in fade-in duration-100">
+        <div
+          className="w-full max-w-2xl bg-white dark:bg-[#16191E] border-[3px] border-[#111111] dark:border-white relative overflow-hidden flex flex-col max-h-[90vh]"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="corner-rule-red" />
+
+          {/* Modal Header */}
+          <div className="p-6 border-b-[3px] border-[#111111] dark:border-white flex items-center justify-between bg-white dark:bg-[#16191E]">
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                {isEditing ? 'Edit Place' : 'Create New Place'}
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#888888]">
+                {isEditing ? 'UPDATE RECORD' : 'CREATE RECORD'}
+              </span>
+              <h2 className="text-xl font-black uppercase tracking-tight text-[#111111] dark:text-white">
+                {isEditing ? `EDIT // ${placeToEdit?.name}` : 'NEW PLACE'}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Save details, attachments, and Google Maps directions
-              </p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="p-1 border-2 border-[#111111] dark:border-white text-[#111111] dark:text-white hover:bg-[#111111] hover:text-white dark:hover:bg-white dark:hover:text-[#111111] transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleFormSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+          {/* Form Fields */}
+          <form onSubmit={handleSubmitForm} className="p-6 overflow-y-auto space-y-5">
             {/* Name */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                Place Name <span className="text-rose-500">*</span>
+              <label className="block text-[11px] font-black uppercase tracking-wider text-[#111111] dark:text-white mb-1.5">
+                PLACE NAME <span className="text-[#E63329]">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Grand Indonesia, Warung Leko, Central Park"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                placeholder="E.G. GUGGENHEIM MUSEUM / CENTRAL CAFE"
+                className="w-full px-4 py-2.5 bg-white dark:bg-[#20242B] border-2 border-[#111111] dark:border-white text-xs font-mono uppercase text-[#111111] dark:text-white placeholder-[#888888] focus:outline-none focus:bg-[#FFFDE6] dark:focus:bg-[#2A2E37]"
               />
             </div>
 
-            {/* Type selector */}
+            {/* Category / Type Selector */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                Type <span className="text-rose-500">*</span>
+              <label className="block text-[11px] font-black uppercase tracking-wider text-[#111111] dark:text-white mb-1.5">
+                CATEGORY CLASSIFICATION
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {types.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setType(t)}
-                    className={`py-2 px-3 rounded-xl text-xs font-semibold border transition text-center ${
-                      type === t
-                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750'
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
+                {types.map((t) => {
+                  const isSelected = type === t;
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setType(t)}
+                      className={`px-3 py-2 text-[10px] font-black uppercase tracking-wider border-2 transition-colors text-center ${
+                        isSelected
+                          ? t === 'Restaurant'
+                            ? 'bg-[#E63329] text-white border-[#111111] dark:border-white'
+                            : t === 'Mall'
+                            ? 'bg-[#1A3A6B] text-white border-[#111111] dark:border-white'
+                            : t === 'Public spaces'
+                            ? 'bg-[#F5C800] text-[#111111] border-[#111111] dark:border-white'
+                            : 'bg-[#111111] text-white border-[#111111] dark:border-white'
+                          : 'bg-white dark:bg-[#20242B] text-[#888888] border-[#111111]/30 dark:border-white/30 hover:border-[#111111] dark:hover:border-white hover:text-[#111111] dark:hover:text-white'
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
               </div>
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                Description & Notes
-              </label>
-              <textarea
-                rows={2}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Highlight dishes, must-see spots, opening hours..."
-                className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-              />
             </div>
 
             {/* Address */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                Address
+              <label className="block text-[11px] font-black uppercase tracking-wider text-[#111111] dark:text-white mb-1.5">
+                PHYSICAL ADDRESS
               </label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Street name, district, city"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                placeholder="STREET, DISTRICT, CITY"
+                className="w-full px-4 py-2.5 bg-white dark:bg-[#20242B] border-2 border-[#111111] dark:border-white text-xs font-mono uppercase text-[#111111] dark:text-white placeholder-[#888888] focus:outline-none focus:bg-[#FFFDE6] dark:focus:bg-[#2A2E37]"
               />
             </div>
 
-            {/* Google Maps Link & Coordinates */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  Navigation & Coordinates
+            {/* GPS Coordinates & Google Maps */}
+            <div className="border-2 border-[#111111] dark:border-white p-4 bg-[#F7F5F0] dark:bg-[#20242B]">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#111111] dark:text-white flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#E63329]" />
+                  GEOLOCATION COORDINATES
                 </span>
                 <button
                   type="button"
                   onClick={handleDetectLocation}
                   disabled={isLocating}
-                  className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:hover:text-emerald-200 flex items-center gap-1 px-2.5 py-1 bg-emerald-100/60 dark:bg-emerald-950/60 rounded-lg transition"
+                  className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-[#111111] text-white dark:bg-white dark:text-[#111111] hover:bg-[#E63329] dark:hover:bg-[#E63329] dark:hover:text-white transition-colors flex items-center gap-1 border border-[#111111]"
                 >
-                  <Navigation className={`w-3.5 h-3.5 ${isLocating ? 'animate-spin' : ''}`} />
-                  {isLocating ? 'Detecting...' : 'Use My Current Location'}
+                  <Navigation className="w-3 h-3" />
+                  <span>{isLocating ? 'DETECTING...' : 'USE CURRENT GPS'}</span>
                 </button>
               </div>
 
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                  Google Maps URL (optional, route automatically generated if empty)
-                </label>
-                <input
-                  type="url"
-                  value={gmapsUrl}
-                  onChange={(e) => setGmapsUrl(e.target.value)}
-                  placeholder="https://maps.google.com/..."
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                    Latitude
+                  <label className="block text-[10px] font-bold uppercase text-[#888888] mb-1">
+                    LATITUDE
                   </label>
                   <input
                     type="number"
                     step="any"
                     value={latitude}
                     onChange={(e) => setLatitude(e.target.value)}
-                    placeholder="-6.1944"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                    placeholder="-6.2088"
+                    className="w-full px-3 py-2 bg-white dark:bg-[#16191E] border border-[#111111] dark:border-white text-xs font-mono focus:outline-none focus:bg-[#FFFDE6]"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                    Longitude
+                  <label className="block text-[10px] font-bold uppercase text-[#888888] mb-1">
+                    LONGITUDE
                   </label>
                   <input
                     type="number"
                     step="any"
                     value={longitude}
                     onChange={(e) => setLongitude(e.target.value)}
-                    placeholder="106.8229"
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                    placeholder="106.8456"
+                    className="w-full px-3 py-2 bg-white dark:bg-[#16191E] border border-[#111111] dark:border-white text-xs font-mono focus:outline-none focus:bg-[#FFFDE6]"
                   />
                 </div>
+              </div>
+
+              <div className="mt-3">
+                <label className="block text-[10px] font-bold uppercase text-[#888888] mb-1">
+                  OPTIONAL GMAPS URL OVERRIDE
+                </label>
+                <input
+                  type="url"
+                  value={gmapsUrl}
+                  onChange={(e) => setGmapsUrl(e.target.value)}
+                  placeholder="https://maps.google.com/..."
+                  className="w-full px-3 py-2 bg-white dark:bg-[#16191E] border border-[#111111] dark:border-white text-xs font-mono focus:outline-none focus:bg-[#FFFDE6]"
+                />
               </div>
             </div>
 
-            {/* Static Files Attachments */}
+            {/* Description */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                  Attachments & Files ({files.length})
-                </label>
-                <label className="cursor-pointer text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900 transition">
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>{isUploading ? 'Uploading...' : 'Upload File'}</span>
-                  <input
-                    type="file"
-                    multiple
-                    disabled={isUploading}
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                </label>
-              </div>
+              <label className="block text-[11px] font-black uppercase tracking-wider text-[#111111] dark:text-white mb-1.5">
+                CURATORIAL NOTES / DESCRIPTION
+              </label>
+              <textarea
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Architectural features, culinary specialties, visiting guidelines..."
+                className="w-full px-4 py-2.5 bg-white dark:bg-[#20242B] border-2 border-[#111111] dark:border-white text-xs font-mono text-[#111111] dark:text-white placeholder-[#888888] focus:outline-none focus:bg-[#FFFDE6] dark:focus:bg-[#2A2E37]"
+              />
+            </div>
 
-              {files.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                  {files.map((file) => {
-                    const isImg = file.mime_type?.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name);
-                    return (
-                      <div
-                        key={file.id}
-                        className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
-                      >
-                        <div className="flex items-center gap-2 truncate mr-2">
-                          {isImg ? (
-                            <img
-                              src={file.url}
-                              alt={file.name}
-                              className="w-8 h-8 rounded object-cover flex-shrink-0 border border-slate-200 dark:border-slate-700"
-                            />
-                          ) : (
-                            <FileText className="w-6 h-6 text-slate-400 flex-shrink-0" />
-                          )}
-                          <div className="truncate">
-                            <a
-                              href={file.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="font-medium text-slate-800 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 truncate block underline"
-                            >
-                              {file.name}
-                            </a>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                              {file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Static File'}
-                            </span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveFile(file.id)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50 transition"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+            {/* File Attachments */}
+            <div>
+              <label className="block text-[11px] font-black uppercase tracking-wider text-[#111111] dark:text-white mb-1.5">
+                ATTACHED FILES & IMAGERY
+              </label>
+
+              <label className="border-2 border-dashed border-[#111111] dark:border-white p-6 bg-[#F7F5F0] dark:bg-[#20242B] flex flex-col items-center justify-center cursor-pointer hover:bg-[#FFFDE6] dark:hover:bg-[#2A2E37] transition-colors block text-center">
+                <Upload className="w-5 h-5 text-[#E63329] mb-1" />
+                <span className="text-xs font-black uppercase tracking-wider text-[#111111] dark:text-white">
+                  {isUploading ? 'UPLOADING TO STORAGE...' : 'CLICK OR DROP FILES TO UPLOAD'}
+                </span>
+                <span className="text-[10px] font-mono text-[#888888] mt-1">
+                  PHOTOS, PDFS, MAP EXPORTS, MENUS
+                </span>
+                <input
+                  type="file"
+                  multiple
+                  disabled={isUploading}
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+
+              {files.length > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  {files.map((file) => (
+                    <div
+                      key={file.id}
+                      className="p-2 border-2 border-[#111111] dark:border-white bg-white dark:bg-[#20242B] flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <FileText className="w-4 h-4 text-[#888888] shrink-0" />
+                        <span className="font-mono text-xs truncate">{file.name}</span>
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="border border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center text-xs text-slate-400 dark:text-slate-500">
-                  No static files attached yet. Attach menus, photos, PDFs, or maps.
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile(file.id)}
+                        className="p-1 hover:text-[#E63329] transition-colors ml-2 shrink-0"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Footer Buttons */}
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+            {/* Modal Actions */}
+            <div className="pt-4 border-t-[3px] border-[#111111] dark:border-white flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition"
+                className="px-5 py-2.5 bg-transparent border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider text-[#111111] dark:text-white hover:bg-[#111111] hover:text-white dark:hover:bg-white dark:hover:text-[#111111] transition-colors"
               >
-                Cancel
+                CANCEL
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition"
+                className="px-6 py-2.5 bg-[#E63329] hover:bg-[#C22921] text-white text-xs font-black uppercase tracking-wider border-2 border-[#111111] dark:border-white transition-colors"
               >
-                {isEditing ? 'Save Changes' : 'Create Place'}
+                {isEditing ? 'SAVE PLACE' : 'CREATE PLACE'}
               </button>
             </div>
           </form>
         </div>
       </div>
 
+      {/* Confirmation Modal */}
       <ConfirmModal
         isOpen={showConfirm}
-        title={isEditing ? 'Update Place Confirmation' : 'Create Place Confirmation'}
-        message={
-          isEditing
-            ? `Are you sure you want to update the details for "${name}"?`
-            : `Are you sure you want to create the place "${name}"?`
-        }
+        title={isEditing ? 'Save Changes' : 'Create Place'}
+        message={`Are you sure you want to ${isEditing ? 'update' : 'create'} the place "${name}"?`}
         actionType={isEditing ? 'edit' : 'create'}
-        confirmText={isEditing ? 'Save Changes' : 'Create Place'}
+        confirmText={isEditing ? 'Yes, Save Place' : 'Yes, Create Place'}
         isLoading={isSubmitting}
         onConfirm={handleConfirmSave}
         onCancel={() => setShowConfirm(false)}

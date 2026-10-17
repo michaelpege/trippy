@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Bauhaus Foundation Background: Structure Black -->
+  <rect width="64" height="64" rx="12" fill="#111111" />
+  
+  <!-- Bauhaus Color DNA Accent Bar (Top Right) -->
+  <g transform="translate(42, 6)">
+    <rect x="0" y="0" width="4" height="4" fill="#E63329" />
+    <rect x="5" y="0" width="4" height="4" fill="#1A3A6B" />
+    <rect x="10" y="0" width="4" height="4" fill="#F5C800" />
+    <rect x="15" y="0" width="4" height="4" fill="#FFFFFF" />
+  </g>
+
+  <!-- Globe (Bauhaus Blue) -->
+  <circle cx="30" cy="34" r="18" fill="#1A3A6B" stroke="#FFFFFF" stroke-width="2" />
+  
+  <!-- Globe Meridians / Grid Arcs (Constructivist Precision) -->
+  <path d="M 12 34 H 48" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-dasharray="2 2" />
+  <ellipse cx="30" cy="34" rx="9" ry="18" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" />
+  <line x1="30" y1="16" x2="30" y2="52" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" />
+
+  <!-- Orbital Flight Trajectory (Bauhaus Yellow Arc) -->
+  <path d="M 10 46 C 8 22, 38 12, 54 20 C 58 22, 58 32, 42 42 C 28 50, 18 48, 14 42" 
+        stroke="#F5C800" stroke-width="3" stroke-linecap="round" fill="none" />
+
+  <!-- Supersonic Bauhaus Plane (Bauhaus Red) -->
+  <g transform="translate(49, 17) rotate(42)">
+    <!-- Plane Body & Delta Wings -->
+    <path d="M 0 -8 L 6 8 L 0 5 L -6 8 Z" fill="#E63329" stroke="#FFFFFF" stroke-width="1.2" stroke-linejoin="miter" />
+    <line x1="0" y1="-8" x2="0" y2="5" stroke="#FFFFFF" stroke-width="1" />
+  </g>
+
+  <!-- Bauhaus Location Pin (Constructivist Circle + Inverted Triangle) -->
+  <g transform="translate(24, 20)">
+    <!-- Pin Head -->
+    <circle cx="6" cy="6" r="6" fill="#E63329" stroke="#111111" stroke-width="1.5" />
+    <!-- Pin Point -->
+    <path d="M 2 9 L 6 15 L 10 9 Z" fill="#E63329" stroke="#111111" stroke-width="1.2" />
+    <!-- Pin Inner Geometric Focal Dot -->
+    <circle cx="6" cy="6" r="2.5" fill="#F5C800" />
+  </g>
+
+  <!-- Subtle Constructivist "T" Monogram Accent (Lower Left) -->
+  <g transform="translate(7, 8)">
+    <rect x="0" y="0" width="12" height="3" fill="#FFFFFF" />
+    <rect x="4.5" y="3" width="3" height="8" fill="#FFFFFF" />
+  </g>
+</svg>

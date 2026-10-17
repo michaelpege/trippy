@@ -40,10 +40,15 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Settings</h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-          System configuration, role-based access control (RBAC), and admin management
+      <div className="pb-4 border-b-2 border-[#111111] dark:border-[#FFFFFF]">
+        <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#E63329]">
+          [SYSTEM // PREFERENCES]
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF] mt-1">
+          Settings
+        </h1>
+        <p className="text-xs sm:text-sm text-[#888888] font-mono mt-1">
+          System topology, role-based access control (RBAC), and node runtime configuration
         </p>
       </div>
 
@@ -52,56 +57,69 @@ export default function SettingsPage() {
         {/* RBAC Sub-Page Card */}
         <Link
           href="/settings/rbac"
-          className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-emerald-500/50 transition flex flex-col justify-between group"
+          className="bg-[#FFFFFF] dark:bg-[#0E1013] p-6 rounded-none border-[3px] border-[#111111] dark:border-[#FFFFFF] corner-rule-blue transition flex flex-col justify-between group hover:border-[#1A3A6B] relative"
         >
           <div>
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 border-2 border-[#111111] dark:border-[#FFFFFF] bg-[#1A3A6B] text-white flex items-center justify-center mb-4">
               <Shield className="w-6 h-6" />
             </div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition">
+            <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#1A3A6B] dark:text-[#F5C800]">
+              [SECURITY SUBSYSTEM]
+            </span>
+            <h2 className="text-lg font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF] mt-1 group-hover:text-[#1A3A6B] dark:group-hover:text-[#F5C800] transition">
               Role-Based Access Control (RBAC)
             </h2>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+            <p className="mt-2 text-xs text-[#888888] font-mono leading-relaxed">
               Define administrative roles, assign fine-grained permissions (Places, Trips, Roulette,
               Settings), and manage authorized Gmail lists.
             </p>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-            <span>Manage {roles.length} Active Roles</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          <div className="mt-6 pt-4 border-t-2 border-[#111111] dark:border-[#FFFFFF] flex items-center justify-between text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF]">
+            <span className="bg-[#F5C800] text-[#111111] px-2.5 py-1 border border-[#111111]">
+              {roles.length} ACTIVE ROLES
+            </span>
+            <div className="flex items-center gap-1.5 group-hover:translate-x-1 transition-transform">
+              <span>CONFIGURE</span>
+              <ArrowRight className="w-4 h-4" />
+            </div>
           </div>
         </Link>
 
         {/* System & Owner Overview */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div className="bg-[#FFFFFF] dark:bg-[#0E1013] p-6 rounded-none border-[3px] border-[#111111] dark:border-[#FFFFFF] corner-rule-yellow flex flex-col justify-between relative">
           <div>
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4">
+            <div className="w-12 h-12 border-2 border-[#111111] dark:border-[#FFFFFF] bg-[#E63329] text-white flex items-center justify-center mb-4">
               <Server className="w-6 h-6" />
             </div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">System Information</h2>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Cloudflare serverless edge runtime connected to Supabase free tier PostgreSQL.
+            <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#E63329]">
+              [NODE TOPOLOGY]
+            </span>
+            <h2 className="text-lg font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF] mt-1">
+              System Architecture
+            </h2>
+            <p className="mt-2 text-xs text-[#888888] font-mono leading-relaxed">
+              Edge serverless execution environment orchestrated on Cloudflare Workers and connected to Supabase PostgreSQL.
             </p>
 
-            <div className="mt-4 space-y-2 text-xs">
-              <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
-                <span className="text-slate-500 dark:text-slate-400">System Owner:</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">
-                  {profile?.ownerEmail || profile?.email || 'Registered'}
+            <div className="mt-5 space-y-2.5 text-xs font-mono">
+              <div className="flex items-center justify-between p-3 bg-[#F7F5F0] dark:bg-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF]">
+                <span className="text-[#888888] uppercase">System Owner:</span>
+                <span className="font-black text-[#111111] dark:text-[#FFFFFF]">
+                  {profile?.ownerEmail || profile?.email || 'REGISTERED'}
                 </span>
               </div>
-              <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
-                <span className="text-slate-500 dark:text-slate-400">Your Permissions:</span>
-                <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                  {profile?.isOwner ? 'Full Super Admin (*)' : `${profile?.permissions.length} perms`}
+              <div className="flex items-center justify-between p-3 bg-[#F7F5F0] dark:bg-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF]">
+                <span className="text-[#888888] uppercase">Your Permissions:</span>
+                <span className="font-black text-[#1A3A6B] dark:text-[#F5C800]">
+                  {profile?.isOwner ? 'SUPER ADMIN (*)' : `${profile?.permissions.length} GRANTED`}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500">
-            Deployment target: Cloudflare Pages & Cloudflare Workers
+          <div className="mt-6 pt-4 border-t-2 border-[#111111] dark:border-[#FFFFFF] text-[10px] font-mono font-bold text-[#888888] uppercase">
+            TARGET: CLOUDFLARE PAGES & WORKERS // V8 RUNTIME
           </div>
         </div>
       </div>

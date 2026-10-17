@@ -100,31 +100,36 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto my-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden p-8 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white mx-auto mb-4 shadow-md shadow-emerald-500/20">
+    <div className="max-w-md mx-auto my-12 bg-[#FFFFFF] dark:bg-[#0E1013] border-[3px] border-[#111111] dark:border-[#FFFFFF] corner-rule-red rounded-none p-8 text-center relative">
+      <div className="w-14 h-14 border-2 border-[#111111] dark:border-[#FFFFFF] bg-[#E63329] text-white flex items-center justify-center mx-auto mb-4">
         <Compass className="w-7 h-7" />
       </div>
 
-      <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Admin Sign In</h1>
-      <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
-        Restricted to registered owner and authorized team members with database RBAC roles.
+      <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#E63329]">
+        [AUTHENTICATION // NODE ACCESS]
+      </span>
+      <h1 className="text-3xl font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF] mt-1">
+        Admin Sign In
+      </h1>
+      <p className="mt-2 text-xs text-[#888888] font-mono max-w-xs mx-auto leading-relaxed">
+        Restricted to registered owner and authorized operators with database RBAC roles.
       </p>
 
       {/* Google GIS Container */}
       <div className="mt-8 flex flex-col items-center justify-center min-h-[48px]">
         <div ref={googleBtnRef} />
         {!gisLoaded && (
-          <div className="text-xs text-slate-400 dark:text-slate-500 animate-pulse flex items-center gap-1.5">
-            <div className="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
-            Loading Google Sign-In...
+          <div className="text-xs font-mono font-bold text-[#888888] flex items-center gap-2">
+            <div className="w-3.5 h-3.5 border-2 border-[#111111] dark:border-[#FFFFFF] border-t-[#E63329] animate-spin rounded-none" />
+            INITIALIZING GOOGLE GIS...
           </div>
         )}
       </div>
 
       {/* Alternative Dev / Direct Email Login for Testing */}
-      <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
-        <div className="flex items-center gap-2 justify-center text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">
-          <span>Or Quick Dev Access</span>
+      <div className="mt-8 pt-6 border-t-2 border-[#111111] dark:border-[#FFFFFF]">
+        <div className="flex items-center gap-2 justify-center text-[10px] font-mono font-black text-[#888888] uppercase tracking-widest mb-3">
+          <span>// QUICK OPERATOR OVERRIDE //</span>
         </div>
 
         <form onSubmit={handleDevLogin} className="space-y-3">
@@ -132,25 +137,24 @@ export default function LoginPage() {
             type="email"
             value={devEmail}
             onChange={(e) => setDevEmail(e.target.value)}
-            placeholder="registered-admin@gmail.com"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+            placeholder="REGISTERED-OPERATOR@GMAIL.COM"
+            className="w-full px-3.5 py-2.5 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-mono font-bold focus:outline-none focus:border-[#E63329] bg-[#F7F5F0] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] uppercase"
           />
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition flex items-center justify-center gap-1.5"
+            className="w-full py-3 bg-[#F5C800] hover:bg-[#111111] hover:text-[#F5C800] text-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] font-black uppercase tracking-wider text-xs rounded-none transition flex items-center justify-center gap-2"
           >
-            <LogIn className="w-3.5 h-3.5" />
+            <LogIn className="w-4 h-4" />
             <span>Sign In with Email</span>
           </button>
         </form>
       </div>
 
-      <div className="mt-6 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-2 text-left">
-        <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+      <div className="mt-6 p-3 bg-[#F7F5F0] dark:bg-[#111111] rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-[11px] font-mono text-[#888888] flex items-start gap-2.5 text-left">
+        <ShieldCheck className="w-4 h-4 text-[#1A3A6B] dark:text-[#F5C800] flex-shrink-0 mt-0.5" />
         <span>
-          Access is enforced at the edge worker. Only accounts registered in the database can query
-          or mutate data.
+          Access policy enforced at Cloudflare edge worker. Only identities present in database roles can authenticate.
         </span>
       </div>
     </div>

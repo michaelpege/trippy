@@ -47,31 +47,39 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto flex items-center justify-between p-4 rounded-2xl shadow-xl border backdrop-blur-md transition-all animate-in slide-in-from-bottom-2 ${
+            className={`pointer-events-auto flex items-center justify-between p-4 border-[3px] border-[#111111] dark:border-white transition-all animate-in slide-in-from-bottom-2 ${
               t.type === 'success'
-                ? 'bg-emerald-50/95 dark:bg-emerald-950/95 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100'
+                ? 'bg-[#F5C800] text-[#111111]'
                 : t.type === 'error'
-                ? 'bg-rose-50/95 dark:bg-rose-950/95 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-100'
-                : 'bg-slate-900/95 dark:bg-slate-800/95 border-slate-800 dark:border-slate-700 text-white'
+                ? 'bg-[#E63329] text-white'
+                : 'bg-[#1A3A6B] text-white'
             }`}
           >
             <div className="flex items-center gap-3">
               {t.type === 'success' && (
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                <div className="w-5 h-5 bg-[#111111] text-[#F5C800] flex items-center justify-center font-black text-xs shrink-0">
+                  ✓
+                </div>
               )}
               {t.type === 'error' && (
-                <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0" />
+                <div className="w-5 h-5 bg-white text-[#E63329] flex items-center justify-center font-black text-xs shrink-0">
+                  !
+                </div>
               )}
               {t.type === 'info' && (
-                <Info className="w-5 h-5 text-sky-400 dark:text-sky-300 flex-shrink-0" />
+                <div className="w-5 h-5 bg-white text-[#1A3A6B] flex items-center justify-center font-black text-xs shrink-0">
+                  i
+                </div>
               )}
-              <span className="text-xs font-medium leading-relaxed">{t.message}</span>
+              <span className="text-xs font-bold uppercase tracking-wider leading-relaxed">
+                {t.message}
+              </span>
             </div>
             <button
               onClick={() => removeToast(t.id)}
-              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+              className="p-1 hover:opacity-70 transition ml-2 shrink-0 border border-current"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         ))}

@@ -169,45 +169,66 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-        <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden my-6">
-          <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 overflow-y-auto">
+        <div className="w-full max-w-2xl bg-[#FFFFFF] dark:bg-[#0E1013] border-[3px] border-[#111111] dark:border-[#FFFFFF] corner-rule-yellow rounded-none my-6 relative">
+          {/* Modal Header */}
+          <div className="px-6 py-4 bg-[#F7F5F0] dark:bg-[#111111] border-b-2 border-[#111111] dark:border-[#FFFFFF] flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#E63329]">
+                  [WHEEL // CONFIG]
+                </span>
+              </div>
+              <h2 className="text-xl font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF]">
                 {isEditing ? 'Edit Roulette Wheel' : 'Configure New Roulette'}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Trip or Place roulette with weighted random selection and shareable links
+              <p className="text-xs text-[#888888] font-mono mt-0.5">
+                Weighted random destination generator with protected access controls
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="p-2 border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#0E1013] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#E63329] hover:text-white transition rounded-none"
+              aria-label="Close modal"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <form onSubmit={handleFormSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+          <form onSubmit={handleFormSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
             {/* Title */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                Roulette Title <span className="text-rose-500">*</span>
+              <label className="block text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] mb-1.5">
+                Roulette Title <span className="text-[#E63329]">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Where should we eat tonight? / Next Holiday Destination"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                placeholder="e.g. DINNER DECIDER // BALI TRIP SHORTLIST"
+                className="w-full px-4 py-2.5 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] text-sm font-bold focus:outline-none focus:border-[#E63329] transition"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] mb-1.5">
+                Description / Notes
+              </label>
+              <textarea
+                rows={2}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Optional purpose or instructions for companions..."
+                className="w-full px-4 py-2 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] text-xs font-medium focus:outline-none focus:border-[#E63329] transition"
               />
             </div>
 
             {/* Mode: Trips or Places */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                Roulette Mode <span className="text-rose-500">*</span>
+              <label className="block text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] mb-1.5">
+                Candidate Target Mode <span className="text-[#E63329]">*</span>
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -218,19 +239,21 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
                       setItems([]);
                     }
                   }}
-                  className={`p-3 rounded-2xl border text-left transition flex items-center gap-3 ${
+                  className={`p-3.5 border-2 text-left transition rounded-none flex items-center gap-3 ${
                     type === 'places'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-950 dark:text-emerald-300 shadow-sm'
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750'
+                      ? 'border-[#111111] dark:border-[#FFFFFF] bg-[#1A3A6B] text-white'
+                      : 'border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F5F0] dark:hover:bg-[#1e2024]'
                   }`}
                 >
-                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
-                    📍
+                  <div className={`w-8 h-8 border-2 border-current flex items-center justify-center font-black text-xs ${
+                    type === 'places' ? 'bg-[#F5C800] text-[#111111]' : 'bg-[#111111] text-white'
+                  }`}>
+                    PL
                   </div>
                   <div>
-                    <p className="text-xs font-bold">Places Roulette</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Pick randomly between places
+                    <p className="text-xs font-black uppercase tracking-wider">Places Pool</p>
+                    <p className={`text-[10px] font-mono ${type === 'places' ? 'text-white/80' : 'text-[#888888]'}`}>
+                      Spin individual spots
                     </p>
                   </div>
                 </button>
@@ -243,19 +266,21 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
                       setItems([]);
                     }
                   }}
-                  className={`p-3 rounded-2xl border text-left transition flex items-center gap-3 ${
+                  className={`p-3.5 border-2 text-left transition rounded-none flex items-center gap-3 ${
                     type === 'trips'
-                      ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 text-indigo-950 dark:text-indigo-300 shadow-sm'
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750'
+                      ? 'border-[#111111] dark:border-[#FFFFFF] bg-[#E63329] text-white'
+                      : 'border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F5F0] dark:hover:bg-[#1e2024]'
                   }`}
                 >
-                  <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">
-                    🗺️
+                  <div className={`w-8 h-8 border-2 border-current flex items-center justify-center font-black text-xs ${
+                    type === 'trips' ? 'bg-[#F5C800] text-[#111111]' : 'bg-[#111111] text-white'
+                  }`}>
+                    TR
                   </div>
                   <div>
-                    <p className="text-xs font-bold">Trips Roulette</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Pick randomly between trips
+                    <p className="text-xs font-black uppercase tracking-wider">Trips Pool</p>
+                    <p className={`text-[10px] font-mono ${type === 'trips' ? 'text-white/80' : 'text-[#888888]'}`}>
+                      Spin multi-stop routes
                     </p>
                   </div>
                 </button>
@@ -263,14 +288,14 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
             </div>
 
             {/* Candidate Items & Weights */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
-              <div className="flex items-center justify-between">
+            <div className="p-4 bg-[#F7F5F0] dark:bg-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#111111]/30 dark:border-[#FFFFFF]/30">
                 <div>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  <span className="text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF]">
                     Candidate Pool & Relative Weights ({items.length})
                   </span>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Higher weight increases probability
+                  <p className="text-[10px] text-[#888888] font-mono">
+                    Higher weight proportionally expands wedge angle
                   </p>
                 </div>
 
@@ -280,15 +305,15 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
                     e.target.value = '';
                   }}
                   defaultValue=""
-                  className="text-xs px-3 py-1.5 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none cursor-pointer"
+                  className="text-xs px-3 py-1.5 bg-white dark:bg-[#0E1013] text-[#111111] dark:text-[#FFFFFF] font-black uppercase tracking-wider border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none focus:outline-none cursor-pointer"
                 >
                   <option value="" disabled>
-                    + Add {type === 'places' ? 'Place' : 'Trip'}...
+                    + ADD {type === 'places' ? 'PLACE' : 'TRIP'}...
                   </option>
                   {type === 'places'
                     ? availablePlaces.map((p) => (
                         <option key={p.id} value={p.id}>
-                          {p.name} ({p.type})
+                          {p.name} [{p.type.toUpperCase()}]
                         </option>
                       ))
                     : availableTrips.map((t) => (
@@ -300,26 +325,31 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
               </div>
 
               {items.length > 0 ? (
-                <div className="space-y-2 mt-2">
-                  {items.map((item) => (
+                <div className="space-y-2 mt-2 max-h-56 overflow-y-auto pr-1">
+                  {items.map((item, idx) => (
                     <div
                       key={item.item_id}
-                      className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between gap-3 shadow-xs"
+                      className="p-3 bg-white dark:bg-[#0E1013] border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none flex items-center justify-between gap-3"
                     >
-                      <div className="truncate flex-1">
-                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                          {item.title}
-                        </p>
-                        {item.subtitle && (
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                            {item.subtitle}
+                      <div className="flex items-center gap-2 truncate flex-1">
+                        <span className="font-mono text-[10px] font-black text-[#888888]">
+                          #{String(idx + 1).padStart(2, '0')}
+                        </span>
+                        <div className="truncate">
+                          <p className="text-xs font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF] truncate">
+                            {item.title}
                           </p>
-                        )}
+                          {item.subtitle && (
+                            <p className="text-[10px] font-mono text-[#888888] truncate">
+                              {item.subtitle}
+                            </p>
+                          )}
+                        </div>
                       </div>
 
                       {/* Weight Selector */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-[10px] font-mono uppercase font-black text-[#888888]">
                           Weight:
                         </span>
                         <input
@@ -330,48 +360,54 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
                           onChange={(e) =>
                             handleUpdateWeight(item.item_id, parseInt(e.target.value, 10) || 1)
                           }
-                          className="w-16 px-2 py-1 text-xs font-bold text-center border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-emerald-500 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white"
+                          className="w-14 px-2 py-1 text-xs font-mono font-black text-center border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
                         />
                         <button
                           type="button"
                           onClick={() => handleRemoveItem(item.item_id)}
-                          className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/50"
+                          className="p-1.5 border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#E63329] hover:text-white transition rounded-none"
+                          title="Remove Candidate"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="border border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center text-xs text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-800">
-                  No candidates added. Select items above to populate this roulette.
+                <div className="border-2 border-dashed border-[#111111]/40 dark:border-[#FFFFFF]/40 rounded-none p-5 text-center text-xs text-[#888888] font-mono bg-white dark:bg-[#0E1013]">
+                  Candidate pool is empty. Use dropdown above to assemble items.
                 </div>
               )}
             </div>
 
             {/* Shareable Link Protection */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                Share-able Link Access Protection
-              </span>
+            <div className="p-4 bg-[#F7F5F0] dark:bg-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#111111]/30 dark:border-[#FFFFFF]/30">
+                <span className="text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] flex items-center gap-1.5">
+                  <Shield className="w-4 h-4 text-[#1A3A6B] dark:text-[#F5C800]" />
+                  Guest Authorization Protocol
+                </span>
+                <span className="font-mono text-[10px] font-black uppercase text-[#888888]">
+                  [SECURITY]
+                </span>
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setProtectionType('google')}
-                  className={`p-3 rounded-xl border text-left transition flex items-center gap-2 ${
+                  className={`p-3 border-2 rounded-none text-left transition flex items-center gap-2.5 ${
                     protectionType === 'google'
-                      ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-950 dark:text-emerald-300'
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                      ? 'border-[#111111] dark:border-[#FFFFFF] bg-[#1A3A6B] text-white'
+                      : 'border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#0E1013] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F5F0]'
                   }`}
                 >
-                  <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <Mail className="w-4 h-4 flex-shrink-0" />
                   <div>
-                    <p className="text-xs font-bold">Google Sign-In</p>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                      Whitelisted Gmail accounts
+                    <p className="text-xs font-black uppercase tracking-wider">Google Sign-In</p>
+                    <p className={`text-[10px] font-mono ${protectionType === 'google' ? 'text-white/80' : 'text-[#888888]'}`}>
+                      Whitelisted emails
                     </p>
                   </div>
                 </button>
@@ -379,17 +415,17 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setProtectionType('token')}
-                  className={`p-3 rounded-xl border text-left transition flex items-center gap-2 ${
+                  className={`p-3 border-2 rounded-none text-left transition flex items-center gap-2.5 ${
                     protectionType === 'token'
-                      ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-500 text-indigo-950 dark:text-indigo-300'
-                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                      ? 'border-[#111111] dark:border-[#FFFFFF] bg-[#F5C800] text-[#111111]'
+                      : 'border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#0E1013] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#F7F5F0]'
                   }`}
                 >
-                  <Lock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  <Lock className="w-4 h-4 flex-shrink-0" />
                   <div>
-                    <p className="text-xs font-bold">Password / Token</p>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                      Static passcode check
+                    <p className="text-xs font-black uppercase tracking-wider">Passcode Token</p>
+                    <p className={`text-[10px] font-mono ${protectionType === 'token' ? 'text-[#111111]/80' : 'text-[#888888]'}`}>
+                      Shared passphrase
                     </p>
                   </div>
                 </button>
@@ -397,7 +433,7 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
 
               {protectionType === 'google' ? (
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                  <label className="block text-[10px] font-mono font-black uppercase tracking-wider text-[#888888] mb-1">
                     Allowed Gmail Accounts (comma-separated)
                   </label>
                   <textarea
@@ -405,39 +441,39 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
                     value={allowedEmailsStr}
                     onChange={(e) => setAllowedEmailsStr(e.target.value)}
                     placeholder="friend1@gmail.com, friend2@gmail.com, ..."
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-850 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                    className="w-full px-3 py-2 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#0E1013] text-[#111111] dark:text-[#FFFFFF] text-xs font-mono focus:outline-none focus:border-[#E63329] transition"
                   />
                 </div>
               ) : (
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                    Static Passcode / Access Token
+                  <label className="block text-[10px] font-mono font-black uppercase tracking-wider text-[#888888] mb-1">
+                    Static Passcode / Secret Access Token
                   </label>
                   <input
                     type="text"
                     value={accessToken}
                     onChange={(e) => setAccessToken(e.target.value)}
-                    placeholder="e.g. bali-trip-secret-2026"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-850 text-slate-900 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                    placeholder="e.g. BALI-2026-TRIP-SECRET"
+                    className="w-full px-3 py-2 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#0E1013] text-[#111111] dark:text-[#FFFFFF] text-xs font-mono font-bold focus:outline-none focus:border-[#E63329] transition uppercase"
                   />
                 </div>
               )}
             </div>
 
             {/* Footer Buttons */}
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+            <div className="pt-4 border-t-2 border-[#111111] dark:border-[#FFFFFF] flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition"
+                className="px-5 py-2.5 text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] bg-white dark:bg-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] hover:bg-[#111111] hover:text-white dark:hover:bg-[#FFFFFF] dark:hover:text-[#111111] rounded-none transition"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition"
+                className="px-6 py-2.5 text-xs font-black uppercase tracking-wider text-[#111111] bg-[#F5C800] border-2 border-[#111111] dark:border-[#FFFFFF] hover:bg-[#111111] hover:text-[#F5C800] rounded-none transition"
               >
-                {isEditing ? 'Save Changes' : 'Create Roulette'}
+                {isEditing ? 'Save Changes' : 'Initialize Roulette'}
               </button>
             </div>
           </form>

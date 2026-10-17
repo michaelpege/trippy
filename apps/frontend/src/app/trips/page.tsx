@@ -61,40 +61,67 @@ export default function TripsPage() {
 
   const handleDeleteTrip = async (id: string) => {
     await deleteTrip(id);
-    toast.success('Trip deleted successfully.');
+    toast.success('Trip deleted.');
     await loadTrips();
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-8">
+      {/* Page Header: Bauhaus Architectural Structure */}
+      <div className="border-b-[3px] border-[#111111] dark:border-white pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Trips</h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Build multi-destination itineraries with ordered places and route directions
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-3 h-3 bg-[#1A3A6B]" />
+            <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-[#888888]">
+              ITINERARY // EXPEDITIONS
+            </span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#111111] dark:text-white leading-none">
+            STRUCTURED TRIPS
+          </h1>
+          <p className="mt-2 text-xs text-[#555555] dark:text-[#A0A5B0]">
+            Multi-stop itineraries linking curated places with continuous waypoint routing and schedule notes.
           </p>
         </div>
 
         <button
           onClick={handleOpenCreate}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20 transition self-start sm:self-auto text-sm"
+          className="px-5 py-2.5 bg-[#E63329] hover:bg-[#C22921] text-white text-xs font-black uppercase tracking-widest border-2 border-[#111111] dark:border-white transition-colors flex items-center gap-2 self-start md:self-auto shrink-0"
         >
           <Plus className="w-4 h-4" />
-          <span>New Trip</span>
+          <span>CREATE NEW TRIP</span>
         </button>
       </div>
 
       {/* Trips Grid */}
       {loading ? (
-        <div className="min-h-[40vh] flex items-center justify-center">
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs text-slate-400 dark:text-slate-500">Loading trips...</p>
-          </div>
+        <div className="min-h-[40vh] flex flex-col items-center justify-center border-2 border-dashed border-[#111111]/30 dark:border-white/30 p-12">
+          <div className="w-8 h-8 border-3 border-[#1A3A6B] border-t-transparent animate-spin mb-4" />
+          <p className="text-xs font-mono uppercase tracking-widest text-[#888888]">
+            COMPILING ITINERARIES...
+          </p>
         </div>
-      ) : trips.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      ) : trips.length === 0 ? (
+        <div className="min-h-[40vh] flex flex-col items-center justify-center border-[3px] border-[#111111] dark:border-white p-12 text-center bg-white dark:bg-[#16191E]">
+          <div className="w-12 h-12 border-2 border-[#111111] dark:border-white bg-[#1A3A6B] text-white flex items-center justify-center mb-4 font-black">
+            <Route className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-black uppercase tracking-wider text-[#111111] dark:text-white">
+            NO TRIPS REGISTERED
+          </h3>
+          <p className="mt-1 text-xs text-[#555555] dark:text-[#A0A5B0] max-w-sm">
+            Organize multiple places into a continuous route by creating your first trip itinerary.
+          </p>
+          <button
+            onClick={handleOpenCreate}
+            className="mt-6 px-5 py-2.5 bg-[#E63329] hover:bg-[#C22921] text-white text-xs font-black uppercase tracking-widest border-2 border-[#111111] dark:border-white transition-colors flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>CREATE FIRST TRIP</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {trips.map((trip) => (
             <TripCard
               key={trip.id}
@@ -103,22 +130,6 @@ export default function TripsPage() {
               onDelete={handleDeleteTrip}
             />
           ))}
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 p-12 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto mb-3">
-            <Route className="w-6 h-6" />
-          </div>
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">No trips planned yet</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-            Group your favorite places into an organized itinerary with scheduled times.
-          </p>
-          <button
-            onClick={handleOpenCreate}
-            className="mt-4 px-4 py-2 bg-emerald-600 text-white font-semibold text-xs rounded-xl hover:bg-emerald-700 transition"
-          >
-            Create Trip Now
-          </button>
         </div>
       )}
 

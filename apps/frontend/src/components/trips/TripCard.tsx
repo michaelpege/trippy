@@ -52,40 +52,45 @@ export const TripCard: React.FC<TripCardProps> = ({ trip, onEdit, onDelete }) =>
 
   return (
     <>
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm hover:shadow-md transition-all p-6 flex flex-col justify-between">
+      <div className="bg-white dark:bg-[#16191E] border-[3px] border-[#111111] dark:border-white p-6 relative overflow-hidden flex flex-col justify-between">
+        {/* Constructivist Corner Accent Rule */}
+        <div className="corner-rule-blue" />
+
         <div>
           {/* Header */}
-          <div className="flex items-start justify-between gap-3 mb-2">
+          <div className="flex items-start justify-between gap-3 mb-3">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 mb-2">
-                <Route className="w-3.5 h-3.5" />
-                {places.length} {places.length === 1 ? 'place' : 'places'}
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest bg-[#1A3A6B] text-white border-2 border-[#111111] dark:border-white mb-2">
+                <Route className="w-3 h-3" />
+                {places.length} {places.length === 1 ? 'STOP' : 'STOPS'}
               </span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">{trip.name}</h3>
+              <h3 className="text-xl font-black uppercase tracking-tight text-[#111111] dark:text-white leading-tight">
+                {trip.name}
+              </h3>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={() => onEdit(trip)}
-                className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 rounded-xl transition"
+                className="p-1.5 border-2 border-[#111111] dark:border-white text-[#111111] dark:text-white hover:bg-[#F5C800] hover:text-[#111111] transition-colors"
                 title="Edit Trip"
               >
-                <Edit2 className="w-4 h-4" />
+                <Edit2 className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setShowDeleteModal(true)}
-                className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-xl transition"
+                className="p-1.5 border-2 border-[#111111] dark:border-white text-[#111111] dark:text-white hover:bg-[#E63329] hover:text-white hover:border-[#E63329] transition-colors"
                 title="Delete Trip"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
           {/* Dates */}
           {(trip.start_date || trip.end_date) && (
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mb-3">
-              <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+            <div className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase text-[#888888] mb-3">
+              <Calendar className="w-3.5 h-3.5" />
               <span>
                 {trip.start_date || 'TBD'} &mdash; {trip.end_date || 'TBD'}
               </span>
@@ -94,41 +99,41 @@ export const TripCard: React.FC<TripCardProps> = ({ trip, onEdit, onDelete }) =>
 
           {/* Description */}
           {trip.description && (
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-3 mb-4">
+            <p className="text-xs text-[#444444] dark:text-[#A0A5B0] leading-relaxed line-clamp-3 mb-4">
               {trip.description}
             </p>
           )}
 
           {/* Itinerary Timeline */}
           {places.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2.5">
-                Itinerary Schedule
+            <div className="mt-4 pt-4 border-t-2 border-[#111111]/10 dark:border-white/10">
+              <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#888888] mb-2.5">
+                WAYPOINT SEQUENCE
               </p>
               <div className="space-y-2">
                 {places.map((item, idx) => (
                   <div
                     key={item.id || idx}
-                    className="p-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between text-xs"
+                    className="p-2.5 bg-[#F7F5F0] dark:bg-[#20242B] border-2 border-[#111111] dark:border-white flex items-center justify-between text-xs"
                   >
                     <div className="flex items-center gap-2 truncate mr-2">
-                      <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-[10px] flex items-center justify-center flex-shrink-0">
+                      <span className="w-5 h-5 bg-[#111111] text-white dark:bg-white dark:text-[#111111] font-mono font-black text-[10px] flex items-center justify-center shrink-0">
                         {idx + 1}
                       </span>
                       <div className="truncate">
-                        <span className="font-semibold text-slate-800 dark:text-slate-200 truncate block">
+                        <span className="font-bold uppercase tracking-wider text-[#111111] dark:text-white truncate block text-[11px]">
                           {item.place?.name || 'Place'}
                         </span>
                         {item.visit_time && (
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
-                            ⏰ {item.visit_time}
+                          <span className="text-[10px] font-mono text-[#888888] block">
+                            SCHEDULE: {item.visit_time}
                           </span>
                         )}
                       </div>
                     </div>
 
                     {item.place && (
-                      <div className="flex-shrink-0">
+                      <div className="shrink-0">
                         <DistanceBadge place={item.place} compact />
                       </div>
                     )}
@@ -140,9 +145,9 @@ export const TripCard: React.FC<TripCardProps> = ({ trip, onEdit, onDelete }) =>
         </div>
 
         {/* Footer actions */}
-        <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <span className="text-[11px] text-slate-400 dark:text-slate-500">
-            Created: {new Date(trip.created_at || Date.now()).toLocaleDateString()}
+        <div className="mt-6 pt-4 border-t-[3px] border-[#111111] dark:border-white flex items-center justify-between">
+          <span className="text-[10px] font-mono text-[#888888] uppercase">
+            CREATED: {new Date(trip.created_at || Date.now()).toLocaleDateString()}
           </span>
 
           {places.length > 0 && (
@@ -150,11 +155,11 @@ export const TripCard: React.FC<TripCardProps> = ({ trip, onEdit, onDelete }) =>
               href={buildMultiStopRouteUrl()}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl shadow-sm transition active:scale-95"
+              className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider px-3.5 py-1.5 bg-[#E63329] hover:bg-[#C22921] text-white border-2 border-[#111111] dark:border-white transition-colors"
             >
               <Route className="w-3.5 h-3.5" />
-              <span>Full Route</span>
-              <ExternalLink className="w-3 h-3 opacity-70" />
+              <span>FULL GMAPS ROUTE</span>
+              <ExternalLink className="w-3 h-3 opacity-60" />
             </a>
           )}
         </div>

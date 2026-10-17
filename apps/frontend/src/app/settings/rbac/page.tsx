@@ -98,28 +98,28 @@ export default function RbacSettingsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-[#111111] dark:border-[#FFFFFF]">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Link
               href="/settings"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300"
+              className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#1A3A6B] dark:text-[#F5C800] hover:text-[#E63329] transition"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Settings</span>
+              <span>[RETURN TO SETTINGS]</span>
             </Link>
           </div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-            Role-Based Access Control (RBAC)
+          <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF]">
+            Role-Based Access Control
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Create roles, assign granular permissions, and authorize email addresses for the admin panel
+          <p className="text-xs sm:text-sm text-[#888888] font-mono mt-1">
+            Granular permission schema, policy definitions, and authorized email assignments
           </p>
         </div>
 
         <button
           onClick={handleOpenCreate}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20 transition self-start sm:self-auto text-sm"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#F5C800] hover:bg-[#111111] hover:text-[#F5C800] text-[#111111] font-black uppercase tracking-wider text-xs border-2 border-[#111111] dark:border-[#FFFFFF] transition self-start sm:self-auto rounded-none"
         >
           <Plus className="w-4 h-4" />
           <span>New Role</span>
@@ -127,14 +127,14 @@ export default function RbacSettingsPage() {
       </div>
 
       {/* Access Rule Information Banner */}
-      <div className="p-4 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-3xl text-xs text-emerald-900 dark:text-emerald-200 flex items-start gap-3">
-        <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+      <div className="p-4 bg-[#1A3A6B] text-white border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none text-xs flex items-start gap-3">
+        <ShieldCheck className="w-5 h-5 text-[#F5C800] flex-shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="font-bold">Admin Authentication Policy</p>
-          <p className="text-emerald-800 dark:text-emerald-300 leading-relaxed">
-            Only users whose Gmail account is assigned to at least one active role below (plus the
-            registered System Owner) can sign in to this admin panel. Users assigned to multiple
-            roles inherit the merged union of all assigned permissions.
+          <p className="font-mono text-xs font-black uppercase tracking-wider text-[#F5C800]">
+            Authentication Policy Directive
+          </p>
+          <p className="font-mono text-[11px] text-white/90 leading-relaxed">
+            Only users whose Gmail address is explicitly mapped to at least one active role below (plus the registered System Owner) are authorized through the edge security gate. Permissions merge additively across overlapping roles.
           </p>
         </div>
       </div>
@@ -142,9 +142,11 @@ export default function RbacSettingsPage() {
       {/* Roles Grid */}
       {loading ? (
         <div className="min-h-[40vh] flex items-center justify-center">
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs text-slate-400 dark:text-slate-500">Loading roles...</p>
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-10 h-10 border-[3px] border-[#111111] dark:border-[#FFFFFF] border-t-[#E63329] animate-spin rounded-none" />
+            <p className="text-xs font-mono font-black uppercase tracking-widest text-[#888888]">
+              [QUERYING ROLE DEFINITIONS...]
+            </p>
           </div>
         </div>
       ) : roles.length > 0 ? (
@@ -154,62 +156,66 @@ export default function RbacSettingsPage() {
             return (
               <div
                 key={role.id}
-                className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition"
+                className="bg-[#FFFFFF] dark:bg-[#0E1013] rounded-none border-[3px] border-[#111111] dark:border-[#FFFFFF] corner-rule-yellow p-6 flex flex-col justify-between relative"
               >
                 <div>
-                  <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="flex items-start justify-between gap-3 mb-2 pb-3 border-b-2 border-[#111111]/20 dark:border-[#FFFFFF]/20">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{role.name}</h3>
+                        <h3 className="text-lg font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF]">
+                          {role.name}
+                        </h3>
                         {isSuperAdmin && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 uppercase">
+                          <span className="px-2 py-0.5 rounded-none text-[10px] font-mono font-black bg-[#E63329] text-white border border-[#111111] uppercase">
                             Super Admin
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">{role.id}</span>
+                      <span className="text-[10px] font-mono text-[#888888]">
+                        ID: {role.id}
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleOpenEdit(role)}
-                        className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl transition"
+                        className="p-1.5 border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#1A3A6B] hover:text-white transition rounded-none"
                         title="Edit Role"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setDeletingId(role.id)}
-                        className="p-2 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition"
+                        className="p-1.5 border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#E63329] hover:text-white transition rounded-none"
                         title="Delete Role"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
 
                   {role.description && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-4 leading-relaxed">
+                    <p className="text-xs text-[#888888] font-mono mt-1 mb-4 leading-relaxed">
                       {role.description}
                     </p>
                   )}
 
                   {/* Permissions Chips */}
                   <div className="mb-4">
-                    <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <Key className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-                      Permissions ({role.permissions.length})
+                    <p className="text-[10px] font-mono font-black text-[#888888] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Key className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF]" />
+                      Permissions Matrix ({role.permissions.length})
                     </p>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1.5">
                       {isSuperAdmin ? (
-                        <span className="px-2.5 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 rounded-lg text-xs font-bold">
-                          * (All System Permissions)
+                        <span className="px-2.5 py-1 bg-[#F5C800] text-[#111111] border-2 border-[#111111] text-xs font-mono font-black">
+                          * ALL PRIVILEGES GRANTED
                         </span>
                       ) : (
                         role.permissions.map((p) => (
                           <span
                             key={p}
-                            className="px-2 py-0.5 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-md text-[10px] font-mono"
+                            className="px-2 py-0.5 bg-[#F7F5F0] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] border border-[#111111] dark:border-[#FFFFFF] text-[10px] font-mono font-bold"
                           >
                             {p}
                           </span>
@@ -220,48 +226,51 @@ export default function RbacSettingsPage() {
 
                   {/* Assigned Members */}
                   <div>
-                    <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-                      Assigned Emails ({role.members?.length || 0})
+                    <p className="text-[10px] font-mono font-black text-[#888888] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-[#111111] dark:text-[#FFFFFF]" />
+                      Assigned Operators ({role.members?.length || 0})
                     </p>
                     {role.members && role.members.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
                         {role.members.map((email) => (
                           <span
                             key={email}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono text-slate-700 dark:text-slate-300"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#F7F5F0] dark:bg-[#111111] border border-[#111111] dark:border-[#FFFFFF] text-xs font-mono font-bold text-[#111111] dark:text-[#FFFFFF]"
                           >
-                            <Mail className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                            <Mail className="w-3 h-3 text-[#1A3A6B] dark:text-[#F5C800]" />
                             <span>{email}</span>
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-slate-400 dark:text-slate-500 italic">No emails assigned to this role.</p>
+                      <p className="text-xs text-[#888888] font-mono italic">
+                        No operators assigned to this role.
+                      </p>
                     )}
                   </div>
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 dark:text-slate-500">
-                  Last updated: {new Date(role.updated_at || Date.now()).toLocaleDateString()}
+                <div className="mt-5 pt-4 border-t-2 border-[#111111]/20 dark:border-[#FFFFFF]/20 text-[10px] font-mono font-bold text-[#888888] uppercase">
+                  MODIFIED: {new Date(role.updated_at || Date.now()).toLocaleDateString()}
                 </div>
               </div>
             );
           })}
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 p-12 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center mx-auto mb-3">
+        <div className="bg-[#FFFFFF] dark:bg-[#0E1013] rounded-none border-2 border-dashed border-[#111111] dark:border-[#FFFFFF] p-12 text-center">
+          <div className="w-12 h-12 border-2 border-[#111111] dark:border-[#FFFFFF] bg-[#F7F5F0] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] flex items-center justify-center mx-auto mb-3">
             <Shield className="w-6 h-6" />
           </div>
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">No custom roles defined</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-            Create roles with selected permissions and list the Gmail addresses of members who should
-            have access.
+          <h3 className="text-base font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF]">
+            No Roles Configured
+          </h3>
+          <p className="text-xs text-[#888888] font-mono mt-1 max-w-sm mx-auto">
+            Create roles with selected permissions and assign authorized Gmail addresses.
           </p>
           <button
             onClick={handleOpenCreate}
-            className="mt-4 px-4 py-2 bg-emerald-600 text-white font-semibold text-xs rounded-xl hover:bg-emerald-700 transition"
+            className="mt-4 px-6 py-2.5 bg-[#F5C800] text-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] font-black uppercase tracking-wider text-xs hover:bg-[#111111] hover:text-[#F5C800] transition rounded-none"
           >
             Create Role
           </button>

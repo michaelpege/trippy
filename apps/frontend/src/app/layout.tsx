@@ -18,6 +18,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
         <script src="https://accounts.google.com/gsi/client" async defer></script>
         {/* Anti-FOUC theme detector */}
         <script
@@ -35,7 +37,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-emerald-500 selection:text-white transition-colors duration-150">
+      <body className="min-h-screen bg-[#F7F5F0] text-[#111111] dark:bg-[#0E1013] dark:text-[#F7F5F0] antialiased selection:bg-[#E63329] selection:text-white transition-colors duration-150">
         <ThemeProvider>
           <ToastProvider>
             <Navbar />

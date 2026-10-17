@@ -32,78 +32,84 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75">
+      <div className="w-full max-w-lg bg-[#FFFFFF] dark:bg-[#0E1013] border-[3px] border-[#111111] dark:border-[#FFFFFF] corner-rule-blue rounded-none overflow-hidden relative">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div className="px-6 py-4 bg-[#F7F5F0] dark:bg-[#111111] border-b-2 border-[#111111] dark:border-[#FFFFFF] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+            <div className="w-9 h-9 border-2 border-[#111111] dark:border-[#FFFFFF] bg-[#1A3A6B] text-white flex items-center justify-center font-bold">
               <Share2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#1A3A6B] dark:text-[#F5C800]">
+                [ACCESS // DISPATCH]
+              </span>
+              <h3 className="text-base font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF]">
                 Protected Shareable Link
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Share with travel companions or friends
-              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-1.5 border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#0E1013] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#E63329] hover:text-white transition rounded-none"
+            aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-5">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-              Roulette Share Link
+            <label className="block text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] mb-1.5">
+              Unique Session URL
             </label>
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 readOnly
                 value={shareUrl}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-mono bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-mono font-bold bg-[#F7F5F0] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
               />
               <button
                 type="button"
                 onClick={handleCopy}
-                className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition flex-shrink-0"
+                className="px-4 py-2.5 bg-[#F5C800] hover:bg-[#111111] hover:text-[#F5C800] text-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-black uppercase tracking-wider rounded-none flex items-center gap-1.5 transition flex-shrink-0"
               >
-                {copied ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
-                <span>{copied ? 'Copied!' : 'Copy'}</span>
+                {copied ? <Check className="w-4 h-4 text-[#111111]" /> : <Copy className="w-4 h-4" />}
+                <span>{copied ? 'COPIED' : 'COPY'}</span>
               </button>
             </div>
           </div>
 
           {/* Protection Details */}
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
-            <div className="flex items-center gap-2">
-              <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                Access Security
+          <div className="p-4 bg-[#F7F5F0] dark:bg-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none space-y-2.5">
+            <div className="flex items-center justify-between pb-2 border-b border-[#111111]/20 dark:border-[#FFFFFF]/20">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-[#E63329]" />
+                <span className="text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF]">
+                  Cryptographic Access Gate
+                </span>
+              </div>
+              <span className="font-mono text-[10px] font-black uppercase text-[#888888]">
+                {roulette.protection_type.toUpperCase()}
               </span>
             </div>
 
             {roulette.protection_type === 'google' ? (
-              <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
-                <p className="flex items-center gap-1 text-slate-700 dark:text-slate-200 font-semibold">
-                  <Mail className="w-3.5 h-3.5 text-blue-500" />
-                  Protected by Google Sign-In
+              <div className="text-xs space-y-2">
+                <p className="flex items-center gap-1.5 text-[#1A3A6B] dark:text-[#F5C800] font-black uppercase tracking-wider text-[11px]">
+                  <Mail className="w-3.5 h-3.5" />
+                  Restricted to Authorized Google GIS Accounts
                 </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Only the owner and the following authorized Gmail accounts can access and spin:
+                <p className="text-[11px] text-[#888888] font-mono leading-relaxed">
+                  Only the owner and the following whitelisted Gmail addresses can decrypt candidates and spin:
                 </p>
-                <div className="flex flex-wrap gap-1 mt-1.5">
+                <div className="flex flex-wrap gap-1.5 pt-1">
                   {roulette.allowed_emails.map((e) => (
                     <span
                       key={e}
-                      className="px-2 py-0.5 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-[10px] font-mono rounded-md"
+                      className="px-2 py-0.5 bg-white dark:bg-[#0E1013] text-[#111111] dark:text-[#FFFFFF] border border-[#111111] dark:border-[#FFFFFF] text-[10px] font-mono font-bold"
                     >
                       {e}
                     </span>
@@ -111,16 +117,16 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
-                <p className="flex items-center gap-1 text-slate-700 dark:text-slate-200 font-semibold">
-                  <Lock className="w-3.5 h-3.5 text-amber-500" />
-                  Protected by Passcode / Token
+              <div className="text-xs space-y-2">
+                <p className="flex items-center gap-1.5 text-[#E63329] font-black uppercase tracking-wider text-[11px]">
+                  <Lock className="w-3.5 h-3.5" />
+                  Protected by Shared Passcode Token
                 </p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Participants will be prompted to enter the secret passcode:
+                <p className="text-[11px] text-[#888888] font-mono leading-relaxed">
+                  Participants must supply this passcode upon arrival before candidate data is revealed:
                 </p>
-                <div className="p-2 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-900 dark:text-amber-200 font-mono font-bold text-xs">
-                  Passcode: {roulette.access_token || '(None)'}
+                <div className="p-2.5 bg-white dark:bg-[#0E1013] border-2 border-[#111111] dark:border-[#FFFFFF] text-[#111111] dark:text-[#FFFFFF] font-mono font-black text-xs tracking-wider">
+                  PASSCODE: {roulette.access_token || '(NONE)'}
                 </div>
               </div>
             )}
@@ -128,11 +134,11 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+        <div className="px-6 py-4 bg-[#F7F5F0] dark:bg-[#111111] border-t-2 border-[#111111] dark:border-[#FFFFFF] flex justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-750 transition"
+            className="px-5 py-2 text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] bg-white dark:bg-[#0E1013] border-2 border-[#111111] dark:border-[#FFFFFF] hover:bg-[#111111] hover:text-white dark:hover:bg-[#FFFFFF] dark:hover:text-[#111111] rounded-none transition"
           >
             Close
           </button>

@@ -65,8 +65,10 @@ export default function SetupPage() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs text-slate-500 dark:text-slate-400">Checking system database status...</p>
+          <div className="w-10 h-10 border-[3px] border-[#111111] dark:border-[#FFFFFF] border-t-[#E63329] animate-spin rounded-none" />
+          <p className="text-xs font-mono font-black uppercase tracking-widest text-[#888888]">
+            [QUERYING SYSTEM DATABASE STATE...]
+          </p>
         </div>
       </div>
     );
@@ -75,27 +77,31 @@ export default function SetupPage() {
   // If already initialized: Endpoint is locked!
   if (isInitialized) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xl overflow-hidden p-8 text-center animate-in fade-in">
-        <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-4">
+      <div className="max-w-md mx-auto my-12 bg-[#FFFFFF] dark:bg-[#0E1013] rounded-none border-[3px] border-[#111111] dark:border-[#FFFFFF] corner-rule-red p-8 text-center relative">
+        <div className="w-14 h-14 border-2 border-[#111111] dark:border-[#FFFFFF] bg-[#E63329] text-white flex items-center justify-center mx-auto mb-4">
           <Lock className="w-7 h-7" />
         </div>
-        <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Setup Already Completed</h2>
-        <p className="mt-2 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-          The database has already been initialized and an owner is registered. For security reasons,
-          the setup endpoint is permanently locked.
+        <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#E63329]">
+          [SECURITY // PERMANENT LOCK]
+        </span>
+        <h2 className="text-2xl font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF] mt-1">
+          Setup Completed
+        </h2>
+        <p className="mt-2 text-xs text-[#888888] font-mono leading-relaxed">
+          The database instance has already been initialized and an owner is registered. For security reasons, this route is sealed.
         </p>
 
         {ownerEmailFound && (
-          <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-700 dark:text-slate-300">
-            Registered Owner: <span className="font-bold">{ownerEmailFound}</span>
+          <div className="mt-4 p-3 bg-[#F7F5F0] dark:bg-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none text-xs font-mono text-[#111111] dark:text-[#FFFFFF]">
+            <span className="text-[#888888] uppercase">Owner:</span> <span className="font-bold">{ownerEmailFound}</span>
           </div>
         )}
 
         <button
           onClick={() => router.push('/login')}
-          className="mt-6 w-full py-3 bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition shadow-sm"
+          className="mt-6 w-full py-3 bg-[#F5C800] hover:bg-[#111111] hover:text-[#F5C800] text-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] font-black uppercase tracking-wider text-xs rounded-none transition"
         >
-          Proceed to Login
+          Proceed to Sign In
         </button>
       </div>
     );
@@ -103,34 +109,38 @@ export default function SetupPage() {
 
   // Setup Wizard for new installation
   return (
-    <div className="max-w-lg mx-auto my-8 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
-      <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-8 text-white text-center relative overflow-hidden">
-        <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mx-auto mb-4 border border-white/20">
-          <Compass className="w-8 h-8" />
+    <div className="max-w-lg mx-auto my-8 bg-[#FFFFFF] dark:bg-[#0E1013] border-[3px] border-[#111111] dark:border-[#FFFFFF] corner-rule-yellow rounded-none overflow-hidden relative">
+      <div className="bg-[#1A3A6B] p-8 text-white text-center border-b-[3px] border-[#111111] dark:border-[#FFFFFF]">
+        <div className="w-14 h-14 border-2 border-white bg-[#E63329] text-white flex items-center justify-center mx-auto mb-4">
+          <Compass className="w-7 h-7" />
         </div>
-        <h1 className="text-2xl font-black tracking-tight">Initial System Setup</h1>
-        <p className="mt-1 text-xs text-emerald-100 max-w-sm mx-auto">
-          Welcome to Trippy! The database is currently uninitialized. Register your Gmail address to
-          become the System Owner.
+        <span className="font-mono text-[10px] font-black uppercase tracking-widest text-[#F5C800]">
+          [GENESIS // SYSTEM BOOTSTRAP]
+        </span>
+        <h1 className="text-2xl font-black uppercase tracking-tight text-white mt-1">
+          System Initialization
+        </h1>
+        <p className="mt-1 text-xs text-white/80 font-mono max-w-sm mx-auto">
+          Welcome to Trippy. The edge database is currently uninitialized. Register your Gmail address to establish the System Owner.
         </p>
       </div>
 
       <div className="p-8">
         <div className="mb-6 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-200/80 dark:border-emerald-800">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-            <span>Database schema & migrations ready to activate</span>
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#111111] dark:text-[#FFFFFF] bg-[#F7F5F0] dark:bg-[#111111] p-3 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF]">
+            <CheckCircle2 className="w-4 h-4 text-[#1A3A6B] dark:text-[#F5C800] flex-shrink-0" />
+            <span>Database schema & migrations verified</span>
           </div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-800 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-800">
-            <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
-            <span>Full unrestricted super-admin privileges will be assigned</span>
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#111111] dark:text-[#FFFFFF] bg-[#F7F5F0] dark:bg-[#111111] p-3 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF]">
+            <ShieldCheck className="w-4 h-4 text-[#E63329] flex-shrink-0" />
+            <span>Full super-admin privileges will be bound to this account</span>
           </div>
         </div>
 
         <form onSubmit={handleRegisterOwner} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-              Owner Gmail Address <span className="text-rose-500">*</span>
+            <label className="block text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] mb-1.5">
+              Owner Gmail Address <span className="text-[#E63329]">*</span>
             </label>
             <input
               type="email"
@@ -138,20 +148,20 @@ export default function SetupPage() {
               value={emailInput}
               onChange={(e) => setEmailInput(e.target.value)}
               placeholder="e.g. yourname@gmail.com"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
+              className="w-full px-4 py-3 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-mono font-bold focus:outline-none focus:border-[#E63329] bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] transition"
             />
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">
-              Make sure this matches the Google account you will use to sign in.
+            <p className="text-[10px] text-[#888888] font-mono mt-1.5">
+              Ensure this exactly matches the Google account you will authenticate with.
             </p>
           </div>
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition text-sm disabled:opacity-50"
+            className="w-full py-3.5 bg-[#F5C800] hover:bg-[#111111] hover:text-[#F5C800] text-[#111111] font-black uppercase tracking-wider text-xs border-2 border-[#111111] dark:border-[#FFFFFF] flex items-center justify-center gap-2 transition rounded-none disabled:opacity-50"
           >
             {submitting ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-[#111111] border-t-transparent animate-spin rounded-none" />
             ) : (
               <>
                 <span>Initialize & Register Owner</span>

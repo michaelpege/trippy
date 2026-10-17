@@ -144,88 +144,93 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-        <div className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden my-6">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 overflow-y-auto animate-in fade-in duration-100">
+        <div className="w-full max-w-2xl bg-white dark:bg-[#16191E] border-[3px] border-[#111111] dark:border-white relative overflow-hidden my-6 flex flex-col max-h-[90vh]">
+          <div className="corner-rule-blue" />
+
           {/* Header */}
-          <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="p-6 border-b-[3px] border-[#111111] dark:border-white flex items-center justify-between bg-white dark:bg-[#16191E]">
             <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                {isEditing ? 'Edit Trip Itinerary' : 'Create New Trip'}
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#888888]">
+                {isEditing ? 'REVISE ITINERARY' : 'NEW ITINERARY'}
+              </span>
+              <h2 className="text-xl font-black uppercase tracking-tight text-[#111111] dark:text-white">
+                {isEditing ? `EDIT // ${tripToEdit?.name}` : 'CREATE TRIP'}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Organize zero to many places into an itinerary
-              </p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="p-1 border-2 border-[#111111] dark:border-white text-[#111111] dark:text-white hover:bg-[#111111] hover:text-white dark:hover:bg-white dark:hover:text-[#111111] transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <form onSubmit={handleFormSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
-            {/* Trip Name */}
+          {/* Form */}
+          <form onSubmit={handleFormSubmit} className="p-6 overflow-y-auto space-y-5">
+            {/* Name */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                Trip Name <span className="text-rose-500">*</span>
+              <label className="block text-[11px] font-black uppercase tracking-wider text-[#111111] dark:text-white mb-1.5">
+                TRIP NAME <span className="text-[#E63329]">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Weekend Jakarta Culinary Tour, Bali Beach Hop"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
-              />
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                Description / Purpose
-              </label>
-              <textarea
-                rows={2}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Notes for packing, overall itinerary summary..."
-                className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                placeholder="E.G. BERLIN ARCHITECTURE TOUR 2026"
+                className="w-full px-4 py-2.5 bg-white dark:bg-[#20242B] border-2 border-[#111111] dark:border-white text-xs font-mono uppercase text-[#111111] dark:text-white placeholder-[#888888] focus:outline-none focus:bg-[#FFFDE6] dark:focus:bg-[#2A2E37]"
               />
             </div>
 
             {/* Dates */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                  Start Date
+                <label className="block text-[10px] font-bold uppercase text-[#888888] mb-1">
+                  START DATE (OPTIONAL)
                 </label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                  className="w-full px-3 py-2 bg-white dark:bg-[#20242B] border-2 border-[#111111] dark:border-white text-xs font-mono text-[#111111] dark:text-white focus:outline-none focus:bg-[#FFFDE6]"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                  End Date
+                <label className="block text-[10px] font-bold uppercase text-[#888888] mb-1">
+                  END DATE (OPTIONAL)
                 </label>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                  className="w-full px-3 py-2 bg-white dark:bg-[#20242B] border-2 border-[#111111] dark:border-white text-xs font-mono text-[#111111] dark:text-white focus:outline-none focus:bg-[#FFFDE6]"
                 />
               </div>
             </div>
 
-            {/* Places Association Section */}
+            {/* Description */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                  Itinerary Places ({selectedPlaces.length})
-                </label>
+              <label className="block text-[11px] font-black uppercase tracking-wider text-[#111111] dark:text-white mb-1.5">
+                EXPEDITION OVERVIEW / NOTES
+              </label>
+              <textarea
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Objectives, logistics, team members, route overview..."
+                className="w-full px-4 py-2.5 bg-white dark:bg-[#20242B] border-2 border-[#111111] dark:border-white text-xs font-mono text-[#111111] dark:text-white placeholder-[#888888] focus:outline-none focus:bg-[#FFFDE6] dark:focus:bg-[#2A2E37]"
+              />
+            </div>
+
+            {/* Places Picker & Sequence */}
+            <div className="border-2 border-[#111111] dark:border-white p-4 bg-[#F7F5F0] dark:bg-[#20242B]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#111111] dark:text-white flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#1A3A6B] dark:text-[#F5C800]" />
+                  WAYPOINT ITINERARY SEQUENCE ({selectedPlaces.length})
+                </span>
+
                 <div className="flex items-center gap-2">
                   <select
                     onChange={(e) => {
@@ -233,10 +238,10 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
                       e.target.value = '';
                     }}
                     defaultValue=""
-                    className="text-xs px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800 rounded-lg focus:outline-none cursor-pointer"
+                    className="px-3 py-1.5 bg-white dark:bg-[#16191E] border border-[#111111] dark:border-white text-xs font-mono uppercase text-[#111111] dark:text-white focus:outline-none"
                   >
                     <option value="" disabled>
-                      + Add a Place to Itinerary...
+                      + ADD PLACE TO ROUTE
                     </option>
                     {availablePlaces.map((p) => (
                       <option key={p.id} value={p.id}>
@@ -247,93 +252,96 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
                 </div>
               </div>
 
-              {selectedPlaces.length > 0 ? (
-                <div className="space-y-2 mt-2">
-                  {selectedPlaces.map((item, index) => {
-                    const place = item.place || availablePlaces.find((p) => p.id === item.place_id);
-                    return (
-                      <div
-                        key={`${item.place_id}_${index}`}
-                        className="p-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center gap-3 transition"
-                      >
-                        <div className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
-                          {index + 1}
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
-                            {place?.name || 'Unknown Place'}
-                          </p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1.5">
-                            <input
-                              type="text"
-                              value={item.visit_time}
-                              onChange={(e) => handleUpdateVisitTime(index, e.target.value)}
-                              placeholder="Visit time (e.g. 10:00 AM)"
-                              className="px-2.5 py-1 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-emerald-500"
-                            />
-                            <input
-                              type="text"
-                              value={item.notes}
-                              onChange={(e) => handleUpdateNotes(index, e.target.value)}
-                              placeholder="Notes (e.g. Book table, buy tickets)"
-                              className="px-2.5 py-1 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-emerald-500"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Order Controls */}
-                        <div className="flex flex-col gap-1">
-                          <button
-                            type="button"
-                            disabled={index === 0}
-                            onClick={() => handleMovePlace(index, 'up')}
-                            className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20 rounded"
-                          >
-                            <ArrowUp className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={index === selectedPlaces.length - 1}
-                            onClick={() => handleMovePlace(index, 'down')}
-                            className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20 rounded"
-                          >
-                            <ArrowDown className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => handleRemovePlace(index)}
-                          className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-xl transition"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    );
-                  })}
+              {selectedPlaces.length === 0 ? (
+                <div className="p-6 border-2 border-dashed border-[#111111]/30 dark:border-white/30 text-center">
+                  <p className="text-xs font-mono uppercase text-[#888888]">
+                    NO WAYPOINTS ADDED YET. SELECT FROM DROPDOWN ABOVE.
+                  </p>
                 </div>
               ) : (
-                <div className="border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-6 text-center text-xs text-slate-400 dark:text-slate-500">
-                  No places added yet. Select places above to build this trip itinerary.
+                <div className="space-y-2">
+                  {selectedPlaces.map((sp, idx) => (
+                    <div
+                      key={sp.place_id + idx}
+                      className="p-3 bg-white dark:bg-[#16191E] border-2 border-[#111111] dark:border-white flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <span className="w-6 h-6 bg-[#111111] text-white dark:bg-white dark:text-[#111111] font-mono font-black text-xs flex items-center justify-center shrink-0">
+                          {idx + 1}
+                        </span>
+                        <div className="truncate">
+                          <span className="font-bold uppercase tracking-wider text-xs text-[#111111] dark:text-white block truncate">
+                            {sp.place?.name || sp.place_id}
+                          </span>
+                          <span className="text-[10px] font-mono text-[#888888]">
+                            {sp.place?.type || 'PLACE'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={sp.visit_time}
+                          onChange={(e) => handleUpdateVisitTime(idx, e.target.value)}
+                          placeholder="TIME (E.G. 10:00)"
+                          className="px-2 py-1 bg-[#F7F5F0] dark:bg-[#20242B] border border-[#111111] dark:border-white text-[11px] font-mono w-28 focus:outline-none"
+                        />
+                        <input
+                          type="text"
+                          value={sp.notes}
+                          onChange={(e) => handleUpdateNotes(idx, e.target.value)}
+                          placeholder="NOTES"
+                          className="px-2 py-1 bg-[#F7F5F0] dark:bg-[#20242B] border border-[#111111] dark:border-white text-[11px] font-mono w-32 focus:outline-none"
+                        />
+
+                        {/* Reorder & Remove Buttons */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => handleMovePlace(idx, 'up')}
+                            className="p-1 border border-[#111111] dark:border-white disabled:opacity-30 hover:bg-[#111111] hover:text-white transition-colors"
+                          >
+                            <ArrowUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === selectedPlaces.length - 1}
+                            onClick={() => handleMovePlace(idx, 'down')}
+                            className="p-1 border border-[#111111] dark:border-white disabled:opacity-30 hover:bg-[#111111] hover:text-white transition-colors"
+                          >
+                            <ArrowDown className="w-3 h-3" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePlace(idx)}
+                            className="p-1 border border-[#111111] dark:border-white hover:bg-[#E63329] hover:text-white transition-colors text-[#E63329]"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* Footer Buttons */}
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+            {/* Actions */}
+            <div className="pt-4 border-t-[3px] border-[#111111] dark:border-white flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition"
+                className="px-5 py-2.5 bg-transparent border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider text-[#111111] dark:text-white hover:bg-[#111111] hover:text-white dark:hover:bg-white dark:hover:text-[#111111] transition-colors"
               >
-                Cancel
+                CANCEL
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md transition"
+                className="px-6 py-2.5 bg-[#1A3A6B] hover:bg-[#132A4F] text-white text-xs font-black uppercase tracking-wider border-2 border-[#111111] dark:border-white transition-colors"
               >
-                {isEditing ? 'Save Changes' : 'Create Trip'}
+                {isEditing ? 'SAVE TRIP' : 'CREATE TRIP'}
               </button>
             </div>
           </form>
@@ -342,14 +350,10 @@ export const TripFormModal: React.FC<TripFormModalProps> = ({
 
       <ConfirmModal
         isOpen={showConfirm}
-        title={isEditing ? 'Update Trip Confirmation' : 'Create Trip Confirmation'}
-        message={
-          isEditing
-            ? `Are you sure you want to update the trip "${name}"?`
-            : `Are you sure you want to create the trip "${name}" with ${selectedPlaces.length} place(s)?`
-        }
+        title={isEditing ? 'Save Trip Changes' : 'Create Trip'}
+        message={`Confirm saving the trip "${name}" with ${selectedPlaces.length} waypoints?`}
         actionType={isEditing ? 'edit' : 'create'}
-        confirmText={isEditing ? 'Save Changes' : 'Create Trip'}
+        confirmText={isEditing ? 'Yes, Save Trip' : 'Yes, Create Trip'}
         isLoading={isSubmitting}
         onConfirm={handleConfirmSave}
         onCancel={() => setShowConfirm(false)}
