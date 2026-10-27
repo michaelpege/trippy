@@ -39,30 +39,87 @@ declare global {
   }
 }
 
+export interface JwtPayload {
+  email?: string;
+  name?: string;
+  picture?: string;
+  exp?: number;
+  iat?: number;
+  sub?: string;
+  iss?: string;
+}
+
 /**
- * Decode JWT token payload
+ * Decode JWT token payload with Unicode support
  */
-export function decodeJwt(token: string): { email?: string; name?: string; picture?: string; exp?: number } {
+export function decodeJwt(token: string): JwtPayload {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return {};
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-    return payload;
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
   } catch {
-    return {};
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return {};
+      return JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    } catch {
+      return {};
+    }
   }
 }
 
 /**
- * Get stored token
+ * Check if token is expired based on JWT 'exp' claim.
+ * Incorporates a 15-second safety skew to prevent sending requests with tokens expiring in-flight.
  */
-export function getStoredToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+export function isTokenExpired(token: string | null): boolean {
+  if (!token) return true;
+  const payload = decodeJwt(token);
+  if (!payload.exp) {
+    // If no exp claim is present, cannot determine expiration locally
+    return false;
+  }
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  return nowInSeconds >= (payload.exp - 15);
 }
 
 /**
- * Get current authenticated user session
+ * Returns remaining lifetime of token in milliseconds.
+ * Returns 0 if already expired or invalid.
+ */
+export function getTokenExpiresIn(token: string | null): number {
+  if (!token) return 0;
+  const payload = decodeJwt(token);
+  if (!payload.exp) return Infinity;
+  const remainingMs = payload.exp * 1000 - Date.now();
+  return Math.max(0, remainingMs);
+}
+
+/**
+ * Get stored token, automatically clearing and returning null if expired
+ */
+export function getStoredToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+  if (!token) return null;
+
+  if (isTokenExpired(token)) {
+    clearSession('token_expired');
+    return null;
+  }
+
+  return token;
+}
+
+/**
+ * Get current authenticated user session, verifying that token is active and not expired
  */
 export function getCurrentUser(): UserSession | null {
   if (typeof window === 'undefined') return null;
@@ -73,11 +130,13 @@ export function getCurrentUser(): UserSession | null {
     const raw = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      return { ...parsed, token };
+      if (parsed.email && !isTokenExpired(token)) {
+        return { ...parsed, token };
+      }
     }
 
     const payload = decodeJwt(token);
-    if (payload.email) {
+    if (payload.email && !isTokenExpired(token)) {
       return {
         email: payload.email,
         name: payload.name || payload.email.split('@')[0],
@@ -115,7 +174,7 @@ export function saveSession(token: string, email?: string, name?: string, pictur
 /**
  * Clear session and logout
  */
-export function clearSession(): void {
+export function clearSession(reason?: string): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
@@ -123,6 +182,9 @@ export function clearSession(): void {
   sessionStorage.removeItem(USER_KEY);
 
   window.dispatchEvent(new Event('auth-state-changed'));
+  if (reason) {
+    window.dispatchEvent(new CustomEvent('auth-expired', { detail: { reason } }));
+  }
 }
 
 export function loadGoogleScript(): Promise<void> {

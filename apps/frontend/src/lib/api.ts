@@ -2,7 +2,7 @@
  * API Client for Trippy Worker Backend
  */
 
-import { getStoredToken } from './auth';
+import { getStoredToken, clearSession } from './auth';
 import type {
   Place,
   PlaceType,
@@ -66,6 +66,20 @@ export async function apiFetch<T>(
   }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      clearSession('unauthorized');
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname;
+        const isPublic =
+          path === '/login' ||
+          path.startsWith('/login/') ||
+          path.startsWith('/setup') ||
+          path.startsWith('/roulette/share');
+        if (!isPublic) {
+          window.location.replace(`/login?expired=1&from=${encodeURIComponent(path)}`);
+        }
+      }
+    }
     const errorMsg = json?.error || `Request failed with status ${response.status}`;
     throw new ApiError(errorMsg, response.status, json);
   }

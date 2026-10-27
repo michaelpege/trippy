@@ -17,8 +17,7 @@ import {
   Sun,
   Moon,
 } from 'lucide-react';
-import { getCurrentUser, clearSession, UserSession } from '@/lib/auth';
-import { getCurrentUserProfile } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import { useTheme } from './ThemeProvider';
 import type { UserAccessProfile } from '@/types';
 
@@ -26,32 +25,11 @@ export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { resolvedTheme, toggleTheme } = useTheme();
-
-  const [userSession, setUserSession] = useState<UserSession | null>(null);
-  const [profile, setProfile] = useState<UserAccessProfile | null>(null);
+  const { user: userSession, profile, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    function refreshUser() {
-      const u = getCurrentUser();
-      setUserSession(u);
-      if (u) {
-        getCurrentUserProfile()
-          .then((res) => setProfile(res.user))
-          .catch(() => setProfile(null));
-      } else {
-        setProfile(null);
-      }
-    }
-
-    refreshUser();
-    window.addEventListener('auth-state-changed', refreshUser);
-    return () => window.removeEventListener('auth-state-changed', refreshUser);
-  }, []);
-
   const handleLogout = () => {
-    clearSession();
-    router.push('/login');
+    logout({ redirect: true });
   };
 
   const navLinks = [

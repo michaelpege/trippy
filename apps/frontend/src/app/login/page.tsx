@@ -1,49 +1,33 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useRef, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Compass, ShieldCheck, AlertCircle, ArrowRight, LogOut, CheckCircle2 } from 'lucide-react';
-import { saveSession, clearSession, loadGoogleScript, getCurrentUser, type UserSession } from '@/lib/auth';
-import { getCurrentUserProfile } from '@/lib/api';
+import { loadGoogleScript } from '@/lib/auth';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/components/common/Toast';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
   const googleBtnRef = useRef<HTMLDivElement | null>(null);
 
-  const [existingUser, setExistingUser] = useState<UserSession | null>(null);
-  const [checkingSession, setCheckingSession] = useState(true);
-  const [authError, setAuthError] = useState<string | null>(null);
+  const { user, isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
 
-  const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [gisLoaded, setGisLoaded] = useState(false);
+
+  const isExpiredNotice = searchParams.get('expired') === '1';
+  const returnPath = searchParams.get('from') || '/places';
 
   const clientId =
     process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
     '500705610156-2j6108eea4i6242mtf5reb0uoj6jrvqq.apps.googleusercontent.com';
 
   useEffect(() => {
-    // Check if there is an active session
-    const current = getCurrentUser();
-    if (current) {
-      setExistingUser(current);
-      // Validate session with backend
-      getCurrentUserProfile()
-        .then(() => {
-          setCheckingSession(false);
-        })
-        .catch(() => {
-          // If token was invalid or revoked, clear stale session
-          clearSession();
-          setExistingUser(null);
-          setCheckingSession(false);
-        });
-    } else {
-      setCheckingSession(false);
-    }
-
-    // Initialize Google GIS
+    // Initialize Google GIS script
     loadGoogleScript()
       .then(() => {
         setGisLoaded(true);
@@ -62,8 +46,10 @@ export default function LoginPage() {
               shape: 'rectangular',
             });
 
-            // Prompt One Tap
-            window.google.accounts.id.prompt();
+            // Prompt One Tap only if not already authenticated
+            if (!isAuthenticated) {
+              window.google.accounts.id.prompt();
+            }
           } catch (e) {
             console.warn('Google GIS render error:', e);
           }
@@ -72,29 +58,26 @@ export default function LoginPage() {
       .catch((err) => {
         console.warn('GIS script failed to load:', err);
       });
-  }, [clientId]);
+  }, [clientId, isAuthenticated]);
 
   const handleGoogleCredentialResponse = async (response: { credential: string }) => {
-    setLoading(true);
+    setSubmitting(true);
     setAuthError(null);
     try {
-      saveSession(response.credential);
-      const meRes = await getCurrentUserProfile();
-      toast.success(`Welcome back, ${meRes.user.email}!`);
-      router.push('/places');
+      const profile = await login(response.credential);
+      toast.success(`Welcome back, ${profile?.email || 'Operator'}!`);
+      router.push(returnPath);
     } catch (err: any) {
       const msg = err.message || 'Access denied: Your Google account is not registered in RBAC.';
       setAuthError(msg);
       toast.error(msg);
-      clearSession();
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const handleSignOut = () => {
-    clearSession();
-    setExistingUser(null);
+    logout({ redirect: false });
     setAuthError(null);
     toast.info('Signed out successfully.');
   };
@@ -123,6 +106,16 @@ export default function LoginPage() {
         Restricted to registered owner and authorized operators with database RBAC roles.
       </p>
 
+      {/* Session Expired Notice */}
+      {isExpiredNotice && (
+        <div className="mt-5 p-3.5 bg-[#E63329] text-white border-2 border-[#111111] dark:border-white text-xs font-mono font-bold text-left flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <span className="leading-relaxed">
+            Your previous session has expired. Please sign in again with your Google account.
+          </span>
+        </div>
+      )}
+
       {/* Error Notice */}
       {authError && (
         <div className="mt-5 p-3.5 bg-[#E63329]/10 border-2 border-[#E63329] text-[#E63329] text-xs font-mono text-left flex items-start gap-2.5">
@@ -132,21 +125,21 @@ export default function LoginPage() {
       )}
 
       {/* Existing Active Session Notice */}
-      {existingUser && !checkingSession && (
+      {isAuthenticated && user && !authLoading && (
         <div className="mt-6 p-4 bg-[#F7F5F0] dark:bg-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] text-left space-y-3">
           <div className="flex items-center gap-2 text-xs font-black uppercase text-[#111111] dark:text-[#FFFFFF]">
             <CheckCircle2 className="w-4 h-4 text-[#F5C800]" />
             <span>Currently Signed In</span>
           </div>
           <div className="font-mono text-xs text-[#888888]">
-            Operator: <strong className="text-[#111111] dark:text-[#FFFFFF]">{existingUser.email}</strong>
+            Operator: <strong className="text-[#111111] dark:text-[#FFFFFF]">{user.email}</strong>
           </div>
           <div className="pt-2 flex items-center gap-2">
             <button
-              onClick={() => router.push('/places')}
+              onClick={() => router.push(returnPath)}
               className="flex-1 py-2.5 bg-[#F5C800] text-[#111111] border-2 border-[#111111] text-xs font-black uppercase tracking-wider hover:bg-[#111111] hover:text-[#F5C800] transition flex items-center justify-center gap-1.5"
             >
-              <span>Dashboard</span>
+              <span>Continue to {returnPath === '/places' ? 'Dashboard' : 'Requested Page'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
             <button
@@ -172,6 +165,13 @@ export default function LoginPage() {
           </div>
         )}
 
+        {submitting && (
+          <div className="text-xs font-mono font-bold text-[#1A3A6B] dark:text-[#F5C800] flex items-center gap-2">
+            <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent animate-spin rounded-none" />
+            VERIFYING GOOGLE CREDENTIALS & RBAC...
+          </div>
+        )}
+
         <button
           type="button"
           onClick={handleManualGooglePrompt}
@@ -188,5 +188,22 @@ export default function LoginPage() {
         </span>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-md mx-auto my-12 p-8 text-center border-2 border-[#111111] dark:border-white">
+          <div className="w-8 h-8 border-3 border-[#E63329] border-t-transparent animate-spin mx-auto mb-3" />
+          <p className="font-mono text-xs uppercase tracking-widest text-[#888888]">
+            Loading Authentication...
+          </p>
+        </div>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
   );
 }
