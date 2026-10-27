@@ -133,6 +133,48 @@ export class RouletteRepository {
   }
 
   /**
+   * Insert immutable audit log entry
+   */
+  async insertAuditEntry(entry: {
+    roulette_id: string;
+    roulette_title: string;
+    type: 'trips' | 'places';
+    selected_item_id: string;
+    selected_item_title: string;
+    candidate_pool: RouletteItem[];
+    executed_by_type: 'google' | 'token' | 'admin';
+    executed_by_identifier: string;
+    ip_address?: string;
+    user_agent?: string;
+  }): Promise<RouletteAuditLog> {
+    const auditId = `aud_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 7)}`;
+    const { data: audit, error: auditError } = await this.supabase
+      .from('trippy_audit_logs')
+      .insert({
+        id: auditId,
+        roulette_id: entry.roulette_id,
+        roulette_title: entry.roulette_title,
+        type: entry.type,
+        selected_item_id: entry.selected_item_id,
+        selected_item_title: entry.selected_item_title,
+        candidate_pool: entry.candidate_pool || [],
+        executed_by_type: entry.executed_by_type,
+        executed_by_identifier: entry.executed_by_identifier,
+        ip_address: entry.ip_address || '',
+        user_agent: entry.user_agent || '',
+      })
+      .select()
+      .single();
+
+    if (auditError) {
+      console.error('Failed to write immutable audit log:', auditError);
+      throw new Error(`Failed to record audit log: ${auditError.message}`);
+    }
+
+    return audit as RouletteAuditLog;
+  }
+
+  /**
    * Execute weighted random selection and record result to immutable audit logs
    */
   async executeSpin(
@@ -177,33 +219,22 @@ export class RouletteRepository {
     }
 
     // Record to immutable audit table
-    const auditId = `aud_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 7)}`;
-    const { data: audit, error: auditError } = await this.supabase
-      .from('trippy_audit_logs')
-      .insert({
-        id: auditId,
-        roulette_id: roulette.id,
-        roulette_title: roulette.title,
-        type: roulette.type,
-        selected_item_id: selectedItem.item_id,
-        selected_item_title: selectedItem.title,
-        candidate_pool: items,
-        executed_by_type: context.type,
-        executed_by_identifier: context.identifier,
-        ip_address: context.ipAddress || '',
-        user_agent: context.userAgent || '',
-      })
-      .select()
-      .single();
-
-    if (auditError) {
-      console.error('Failed to write immutable audit log:', auditError);
-      throw new Error(`Failed to record roulette execution audit log: ${auditError.message}`);
-    }
+    const auditLog = await this.insertAuditEntry({
+      roulette_id: roulette.id,
+      roulette_title: roulette.title,
+      type: roulette.type,
+      selected_item_id: selectedItem.item_id,
+      selected_item_title: selectedItem.title,
+      candidate_pool: items,
+      executed_by_type: context.type,
+      executed_by_identifier: context.identifier,
+      ip_address: context.ipAddress,
+      user_agent: context.userAgent,
+    });
 
     return {
       selectedItem,
-      auditLog: audit as RouletteAuditLog,
+      auditLog,
     };
   }
 }

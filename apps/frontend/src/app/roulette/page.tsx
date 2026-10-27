@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Disc,
   Plus,
@@ -14,10 +15,12 @@ import {
   Trash2,
   Sparkles,
   ExternalLink,
+  Sliders,
 } from 'lucide-react';
 import { RouletteWheel } from '@/components/roulette/RouletteWheel';
 import { RouletteFormModal } from '@/components/roulette/RouletteFormModal';
 import { ShareLinkModal } from '@/components/roulette/ShareLinkModal';
+import { RouletteNav } from '@/components/roulette/RouletteNav';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 import {
   fetchRoulettes,
@@ -29,8 +32,11 @@ import {
 import { useToast } from '@/components/common/Toast';
 import type { Roulette, RouletteItem } from '@/types';
 
-export default function RoulettePage() {
+function RouletteView() {
   const toast = useToast();
+  const searchParams = useSearchParams();
+  const targetId = searchParams.get('id');
+
   const [roulettes, setRoulettes] = useState<Roulette[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeRoulette, setActiveRoulette] = useState<Roulette | null>(null);
@@ -50,6 +56,15 @@ export default function RoulettePage() {
       const res = await fetchRoulettes();
       const list = res.roulettes || [];
       setRoulettes(list);
+
+      if (targetId) {
+        const matching = list.find((r) => r.id === targetId);
+        if (matching) {
+          setActiveRoulette(matching);
+          return;
+        }
+      }
+
       if (list.length > 0 && !activeRoulette) {
         setActiveRoulette(list[0]);
       } else if (activeRoulette) {
@@ -65,7 +80,7 @@ export default function RoulettePage() {
 
   useEffect(() => {
     loadRoulettes();
-  }, []);
+  }, [targetId]);
 
   const handleOpenCreate = () => {
     setEditingRoulette(null);
@@ -128,7 +143,7 @@ export default function RoulettePage() {
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="border-b-[3px] border-[#111111] dark:border-white pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -148,21 +163,24 @@ export default function RoulettePage() {
 
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            href="/roulette/audit"
+            href="/roulette/manage"
             className="px-4 py-2.5 bg-white dark:bg-[#16191E] border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider text-[#111111] dark:text-white hover:bg-[#F5C800] hover:text-[#111111] transition-colors flex items-center gap-1.5"
           >
-            <History className="w-4 h-4" />
-            <span>AUDIT TRAIL</span>
+            <Sliders className="w-4 h-4" />
+            <span>MANAGEMENT CONSOLE</span>
           </Link>
           <button
             onClick={handleOpenCreate}
-            className="px-5 py-2.5 bg-[#E63329] hover:bg-[#C22921] text-white text-xs font-black uppercase tracking-widest border-2 border-[#111111] dark:border-white transition-colors flex items-center gap-2"
+            className="px-5 py-2.5 bg-[#E63329] hover:bg-[#C22921] text-white text-xs font-black uppercase tracking-widest border-2 border-[#111111] dark:border-white transition-colors flex items-center gap-2 shadow-[2px_2px_0px_0px_#111111]"
           >
             <Plus className="w-4 h-4" />
             <span>NEW ROULETTE</span>
           </button>
         </div>
       </div>
+
+      {/* Sub-Navigation Tabs */}
+      <RouletteNav activeTab="spinner" />
 
       {loading ? (
         <div className="min-h-[40vh] flex flex-col items-center justify-center border-2 border-dashed border-[#111111]/30 dark:border-white/30 p-12">
@@ -179,8 +197,8 @@ export default function RoulettePage() {
           <h3 className="text-base font-black uppercase tracking-wider text-[#111111] dark:text-white">
             NO ROULETTES CREATED
           </h3>
-          <p className="mt-1 text-xs text-[#555555] dark:text-[#A0A5B0] max-w-sm">
-            Configure your first trip or places roulette with weighted probabilities and sharing permissions.
+          <p className="mt-2 text-xs font-mono text-[#888888] max-w-sm">
+            Create your first weighted decision wheel to fairly distribute visit chances among candidate destinations.
           </p>
           <button
             onClick={handleOpenCreate}
@@ -229,7 +247,15 @@ export default function RoulettePage() {
                       </h2>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/roulette/detail/?id=${activeRoulette.id}`}
+                        className="px-3 py-1.5 bg-[#F5C800] text-[#111111] hover:bg-[#111111] hover:text-[#F5C800] border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider transition-colors flex items-center gap-1.5"
+                      >
+                        <Sliders className="w-3.5 h-3.5" />
+                        <span>DETAILS & EDIT</span>
+                      </Link>
+
                       <button
                         onClick={() => setSharingRoulette(activeRoulette)}
                         className="px-3 py-1.5 bg-[#111111] dark:bg-white text-white dark:text-[#111111] hover:bg-[#E63329] dark:hover:bg-[#E63329] dark:hover:text-white border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider transition-colors flex items-center gap-1.5"
@@ -237,13 +263,15 @@ export default function RoulettePage() {
                         <Share2 className="w-3.5 h-3.5" />
                         <span>SHARE</span>
                       </button>
+
                       <button
                         onClick={() => handleOpenEdit(activeRoulette)}
                         className="p-1.5 border-2 border-[#111111] dark:border-white text-[#111111] dark:text-white hover:bg-[#F5C800] hover:text-[#111111] transition-colors"
-                        title="Edit Roulette"
+                        title="Edit Roulette Modal"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
+
                       <button
                         onClick={() => setDeletingId(activeRoulette.id)}
                         className="p-1.5 border-2 border-[#111111] dark:border-white text-[#111111] dark:text-white hover:bg-[#E63329] hover:text-white transition-colors"
@@ -272,36 +300,53 @@ export default function RoulettePage() {
                 <span className="text-[11px] font-black uppercase tracking-wider text-[#111111] dark:text-white">
                   CONFIGURED ROULETTES ({roulettes.length})
                 </span>
-                <span className="text-[10px] font-mono text-[#888888]">SELECT TO ACTIVATE</span>
+                <Link
+                  href="/roulette/manage"
+                  className="text-[10px] font-mono font-black uppercase text-[#1A3A6B] dark:text-[#F5C800] hover:underline flex items-center gap-1"
+                >
+                  <span>MANAGE ALL</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </Link>
               </div>
 
               <div className="space-y-2">
                 {roulettes.map((r) => {
                   const isSelected = activeRoulette?.id === r.id;
                   return (
-                    <button
+                    <div
                       key={r.id}
-                      onClick={() => setActiveRoulette(r)}
-                      className={`w-full text-left p-3 border-2 transition-all flex items-center justify-between ${
+                      className={`w-full p-3 border-2 transition-all flex items-center justify-between ${
                         isSelected
                           ? 'border-[#E63329] bg-[#FFFDE6] dark:bg-[#20242B] text-[#111111] dark:text-white'
                           : 'border-[#111111]/30 dark:border-white/30 hover:border-[#111111] dark:hover:border-white bg-[#F7F5F0] dark:bg-[#16191E]'
                       }`}
                     >
-                      <div className="truncate mr-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveRoulette(r)}
+                        className="truncate mr-2 text-left flex-1"
+                      >
                         <span className="font-black uppercase tracking-wider text-xs block truncate">
                           {r.title}
                         </span>
                         <span className="text-[10px] font-mono text-[#888888]">
                           {r.items?.length || 0} ITEMS // {r.type.toUpperCase()}
                         </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      </button>
+
+                      <div className="flex items-center gap-2 shrink-0">
                         {isSelected && (
                           <span className="w-2.5 h-2.5 bg-[#E63329]" />
                         )}
+                        <Link
+                          href={`/roulette/detail/?id=${r.id}`}
+                          className="p-1 border border-[#111111]/40 dark:border-white/40 hover:bg-[#F5C800] hover:text-[#111111] text-[#888888] transition"
+                          title="Open Detail & Edit Page"
+                        >
+                          <Sliders className="w-3.5 h-3.5" />
+                        </Link>
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -379,5 +424,22 @@ export default function RoulettePage() {
         onCancel={() => setDeletingId(null)}
       />
     </div>
+  );
+}
+
+export default function RoulettePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[40vh] flex flex-col items-center justify-center border-2 border-dashed border-[#111111]/30 dark:border-white/30 p-12">
+          <div className="w-8 h-8 border-3 border-[#E63329] border-t-transparent animate-spin mb-4" />
+          <p className="text-xs font-mono uppercase tracking-widest text-[#888888]">
+            LOADING PROBABILISTIC WHEELS...
+          </p>
+        </div>
+      }
+    >
+      <RouletteView />
+    </Suspense>
   );
 }

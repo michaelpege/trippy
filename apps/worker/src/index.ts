@@ -212,8 +212,8 @@ export default {
           );
         }
         if (method === 'PUT') {
-          return withPermission(request, env, corsConfig, 'roulette:update', (req) =>
-            rouletteHandler.updateRoulette(req, env, corsConfig, rouletteId)
+          return withPermission(request, env, corsConfig, 'roulette:update', (req, user) =>
+            rouletteHandler.updateRoulette(req, env, corsConfig, rouletteId, user)
           );
         }
         if (method === 'DELETE') {

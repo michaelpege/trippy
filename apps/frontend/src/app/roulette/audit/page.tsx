@@ -12,7 +12,12 @@ import {
   Lock,
   Globe,
   Disc,
+  Plus,
+  Trash2,
+  Sliders,
+  Shield,
 } from 'lucide-react';
+import { RouletteNav } from '@/components/roulette/RouletteNav';
 import { fetchAuditLogs } from '@/lib/api';
 import { useToast } from '@/components/common/Toast';
 import type { RouletteAuditLog } from '@/types';
@@ -45,19 +50,16 @@ export default function RouletteAuditPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-[#111111] dark:border-[#FFFFFF]">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Link
-              href="/roulette"
-              className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#1A3A6B] dark:text-[#F5C800] hover:text-[#E63329] transition"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>[RETURN TO WHEEL]</span>
-            </Link>
+            <span className="w-3 h-3 bg-[#1A3A6B]" />
+            <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase text-[#888888]">
+              DECISION ENGINE // LEDGER
+            </span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF]">
-            Execution Audit Trail
+            Execution & Modification Audit Trail
           </h1>
           <p className="text-xs sm:text-sm text-[#888888] font-mono mt-1">
-            Cryptographically sealed execution ledger of every roulette outcome
+            Cryptographically sealed execution ledger of every roulette outcome, candidate change, and security configuration
           </p>
         </div>
 
@@ -67,6 +69,9 @@ export default function RouletteAuditPage() {
           <span>Strictly Immutable // Deletion Prohibited</span>
         </div>
       </div>
+
+      {/* Sub-Navigation */}
+      <RouletteNav activeTab="audit" />
 
       {/* Audit Logs Table / List */}
       {loading ? (
@@ -88,20 +93,53 @@ export default function RouletteAuditPage() {
           <div className="divide-y-2 divide-[#111111]/20 dark:divide-[#FFFFFF]/20">
             {logs.map((log) => {
               const execDate = new Date(log.created_at);
+              const isAdd = log.selected_item_title.startsWith('[ITEM_ADDED]');
+              const isRemove = log.selected_item_title.startsWith('[ITEM_REMOVED]');
+              const isWeight = log.selected_item_title.startsWith('[WEIGHT_MODIFIED]');
+              const isAuth = log.selected_item_title.startsWith('[AUTH_');
+              const isSpin = !isAdd && !isRemove && !isWeight && !isAuth;
+
+              let icon = <Trophy className="w-5 h-5" />;
+              let iconBg = 'bg-[#F5C800] text-[#111111]';
+              let badgeColor = 'bg-[#E63329] text-white';
+              let badgeText = 'Winner';
+
+              if (isAdd) {
+                icon = <Plus className="w-5 h-5" />;
+                iconBg = 'bg-[#1A3A6B] text-white';
+                badgeColor = 'bg-[#1A3A6B] text-white';
+                badgeText = 'Candidate Added';
+              } else if (isRemove) {
+                icon = <Trash2 className="w-5 h-5" />;
+                iconBg = 'bg-red-700 text-white';
+                badgeColor = 'bg-red-700 text-white';
+                badgeText = 'Candidate Removed';
+              } else if (isWeight) {
+                icon = <Sliders className="w-5 h-5" />;
+                iconBg = 'bg-[#F5C800] text-[#111111]';
+                badgeColor = 'bg-[#F5C800] text-[#111111]';
+                badgeText = 'Weight Adjusted';
+              } else if (isAuth) {
+                icon = <Shield className="w-5 h-5" />;
+                iconBg = 'bg-purple-800 text-white';
+                badgeColor = 'bg-purple-800 text-white';
+                badgeText = 'Security Updated';
+              }
+
               return (
                 <div key={log.id} className="p-5 hover:bg-[#F7F5F0]/60 dark:hover:bg-[#111111]/60 transition">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 border-2 border-[#111111] dark:border-[#FFFFFF] bg-[#F5C800] text-[#111111] flex items-center justify-center flex-shrink-0 font-bold">
-                        <Trophy className="w-5 h-5" />
+                      <div className={`w-10 h-10 border-2 border-[#111111] dark:border-[#FFFFFF] ${iconBg} flex items-center justify-center flex-shrink-0 font-bold`}>
+                        {icon}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="text-base font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF]">
                             {log.selected_item_title}
                           </h3>
-                          <span className="px-2 py-0.5 rounded-none text-[10px] font-mono font-black bg-[#E63329] text-white border border-[#111111] uppercase">
-                            Winner
+                          <span className={`px-2 py-0.5 rounded-none text-[10px] font-mono font-black border border-[#111111] uppercase ${badgeColor}`}>
+                            {badgeText}
                           </span>
                         </div>
                         <p className="text-xs text-[#888888] font-mono mt-0.5">

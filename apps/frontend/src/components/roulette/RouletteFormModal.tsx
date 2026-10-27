@@ -47,9 +47,12 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
   const [items, setItems] = useState<RouletteItem[]>(rouletteToEdit?.items || []);
 
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     fetchPlaces()
       .then((res) => setAvailablePlaces(res.places))
       .catch((err) => console.error(err));
@@ -58,19 +61,65 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
       .catch((err) => console.error(err));
 
     if (rouletteToEdit) {
-      setTitle(rouletteToEdit.title);
+      setTitle(rouletteToEdit.title || '');
       setDescription(rouletteToEdit.description || '');
-      setType(rouletteToEdit.type);
-      setProtectionType(rouletteToEdit.protection_type);
-      setAllowedEmailsStr(rouletteToEdit.allowed_emails.join(', '));
+      setType(rouletteToEdit.type || 'places');
+      setProtectionType(rouletteToEdit.protection_type || 'google');
+      setAllowedEmailsStr((rouletteToEdit.allowed_emails || []).join(', '));
       setAccessToken(rouletteToEdit.access_token || '');
       setItems(rouletteToEdit.items || []);
     } else {
+      setTitle('');
+      setDescription('');
+      setType('places');
+      setProtectionType('google');
+      setAllowedEmailsStr('');
+      setAccessToken('');
       setItems([]);
     }
-  }, [rouletteToEdit]);
+  }, [isOpen, rouletteToEdit]);
 
   if (!isOpen) return null;
+
+  const isFormDirty = () => {
+    if (!rouletteToEdit) {
+      return (
+        !!title.trim() ||
+        !!description.trim() ||
+        items.length > 0 ||
+        !!allowedEmailsStr.trim() ||
+        !!accessToken.trim()
+      );
+    }
+    const initialEmails = (rouletteToEdit.allowed_emails || []).join(', ');
+    return (
+      title !== (rouletteToEdit.title || '') ||
+      description !== (rouletteToEdit.description || '') ||
+      type !== rouletteToEdit.type ||
+      protectionType !== rouletteToEdit.protection_type ||
+      allowedEmailsStr !== initialEmails ||
+      accessToken !== (rouletteToEdit.access_token || '') ||
+      JSON.stringify(items) !== JSON.stringify(rouletteToEdit.items || [])
+    );
+  };
+
+  const handleRequestClose = () => {
+    if (isFormDirty()) {
+      setShowDiscardConfirm(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleGenerateToken = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = 'ROU-';
+    for (let i = 0; i < 4; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += '-';
+    for (let i = 0; i < 4; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+    setAccessToken(code);
+    toast.info(`Generated passcode token: ${code}`);
+  };
 
   const handleAddItem = (id: string) => {
     if (!id) return;
@@ -187,7 +236,7 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleRequestClose}
               className="p-2 border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#0E1013] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#E63329] hover:text-white transition rounded-none"
               aria-label="Close modal"
             >
@@ -446,9 +495,18 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
                 </div>
               ) : (
                 <div>
-                  <label className="block text-[10px] font-mono font-black uppercase tracking-wider text-[#888888] mb-1">
-                    Static Passcode / Secret Access Token
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[10px] font-mono font-black uppercase tracking-wider text-[#888888]">
+                      Static Passcode / Secret Access Token
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleGenerateToken}
+                      className="text-[10px] font-mono font-black uppercase text-[#1A3A6B] dark:text-[#F5C800] hover:underline"
+                    >
+                      + Generate Random Token
+                    </button>
+                  </div>
                   <input
                     type="text"
                     value={accessToken}
@@ -464,7 +522,7 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
             <div className="pt-4 border-t-2 border-[#111111] dark:border-[#FFFFFF] flex items-center justify-end gap-3">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleRequestClose}
                 className="px-5 py-2.5 text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] bg-white dark:bg-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] hover:bg-[#111111] hover:text-white dark:hover:bg-[#FFFFFF] dark:hover:text-[#111111] rounded-none transition"
               >
                 Cancel
@@ -493,6 +551,20 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
         isLoading={isSubmitting}
         onConfirm={handleConfirmSave}
         onCancel={() => setShowConfirm(false)}
+      />
+
+      <ConfirmModal
+        isOpen={showDiscardConfirm}
+        title="Discard Unsaved Changes"
+        message="You have unsaved changes in this roulette configuration. Are you sure you want to discard them?"
+        actionType="delete"
+        confirmText="Discard Changes"
+        cancelText="Keep Editing"
+        onConfirm={() => {
+          setShowDiscardConfirm(false);
+          onClose();
+        }}
+        onCancel={() => setShowDiscardConfirm(false)}
       />
     </>
   );
