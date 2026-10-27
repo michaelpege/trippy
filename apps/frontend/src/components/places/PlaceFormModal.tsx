@@ -72,8 +72,128 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
   const [gmapsGroups, setGmapsGroups] = useState<string[]>([]);
   const [showPhotoPicker, setShowPhotoPicker] = useState(false);
 
+  // Confirmation modals
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Reset all fields to initial or blank
+  const resetForm = React.useCallback(
+    (place?: Place | null) => {
+      setName(place?.name || '');
+      setType(place?.type || 'Restaurant');
+      setDescription(place?.description || '');
+      setAddress(place?.address || '');
+      setGmapsUrl(place?.gmaps_url || '');
+      setLatitude(
+        place?.latitude !== null && place?.latitude !== undefined
+          ? String(place.latitude)
+          : ''
+      );
+      setLongitude(
+        place?.longitude !== null && place?.longitude !== undefined
+          ? String(place.longitude)
+          : ''
+      );
+      setFiles(place?.files || []);
+      setGmapsInputUrl('');
+      setIsParsingGmaps(false);
+      setGmapsPhotos([]);
+      setGmapsGroups([]);
+      setShowPhotoPicker(false);
+      setShowConfirm(false);
+      setShowDiscardConfirm(false);
+    },
+    []
+  );
+
+  // Re-sync / reset form whenever modal opens or placeToEdit changes
+  React.useEffect(() => {
+    if (isOpen) {
+      resetForm(placeToEdit);
+    }
+  }, [isOpen, placeToEdit, resetForm]);
+
+  // Check if user has modified any fields
+  const checkIsDirty = React.useCallback((): boolean => {
+    if (!placeToEdit) {
+      return (
+        name.trim() !== '' ||
+        description.trim() !== '' ||
+        address.trim() !== '' ||
+        gmapsUrl.trim() !== '' ||
+        latitude.trim() !== '' ||
+        longitude.trim() !== '' ||
+        files.length > 0 ||
+        gmapsInputUrl.trim() !== ''
+      );
+    }
+
+    const initialLat =
+      placeToEdit.latitude !== null && placeToEdit.latitude !== undefined
+        ? String(placeToEdit.latitude)
+        : '';
+    const initialLng =
+      placeToEdit.longitude !== null && placeToEdit.longitude !== undefined
+        ? String(placeToEdit.longitude)
+        : '';
+    const initialFiles = placeToEdit.files || [];
+
+    return (
+      name !== (placeToEdit.name || '') ||
+      type !== (placeToEdit.type || 'Restaurant') ||
+      description !== (placeToEdit.description || '') ||
+      address !== (placeToEdit.address || '') ||
+      gmapsUrl !== (placeToEdit.gmaps_url || '') ||
+      latitude !== initialLat ||
+      longitude !== initialLng ||
+      files.length !== initialFiles.length ||
+      gmapsInputUrl.trim() !== ''
+    );
+  }, [
+    placeToEdit,
+    name,
+    type,
+    description,
+    address,
+    gmapsUrl,
+    latitude,
+    longitude,
+    files,
+    gmapsInputUrl,
+  ]);
+
+  const handleAttemptClose = React.useCallback(() => {
+    if (checkIsDirty()) {
+      setShowDiscardConfirm(true);
+    } else {
+      resetForm(placeToEdit);
+      onClose();
+    }
+  }, [checkIsDirty, placeToEdit, resetForm, onClose]);
+
+  // Handle Escape key to guard against accidental close mid-edit
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (showPhotoPicker) {
+          setShowPhotoPicker(false);
+        } else if (showConfirm) {
+          setShowConfirm(false);
+        } else if (showDiscardConfirm) {
+          setShowDiscardConfirm(false);
+        } else {
+          handleAttemptClose();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, showPhotoPicker, showConfirm, showDiscardConfirm, handleAttemptClose]);
 
   if (!isOpen) return null;
 
@@ -89,7 +209,11 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
       const res = await parseGmapsUrl(rawUrl);
       const data = res.data;
 
-      if (data.name) setName(data.name);
+      // Ensure all '+' are parsed to normal spaces and trimmed
+      if (data.name) {
+        const cleanName = data.name.replace(/\+/g, ' ').replace(/\s+/g, ' ').trim();
+        setName(cleanName);
+      }
       if (data.type) setType(data.type);
       if (data.address) setAddress(data.address);
       if (data.gmaps_url) setGmapsUrl(data.gmaps_url);
@@ -212,6 +336,7 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
       });
 
       setShowConfirm(false);
+      resetForm(null);
       onClose();
     } catch (err: any) {
       toast.error(err.message || 'Save failed.');
@@ -243,7 +368,7 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
               </h2>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleAttemptClose}
               className="p-1 border-2 border-[#111111] dark:border-white text-[#111111] dark:text-white hover:bg-[#111111] hover:text-white dark:hover:bg-white dark:hover:text-[#111111] transition-colors"
             >
               <X className="w-5 h-5" />
@@ -528,7 +653,7 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
             <div className="pt-4 border-t-[3px] border-[#111111] dark:border-white flex items-center justify-end gap-3">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={handleAttemptClose}
                 className="px-5 py-2.5 bg-transparent border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider text-[#111111] dark:text-white hover:bg-[#111111] hover:text-white dark:hover:bg-white dark:hover:text-[#111111] transition-colors"
               >
                 CANCEL
@@ -544,7 +669,7 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
         </div>
       </div>
 
-      {/* Confirmation Modal */}
+      {/* Confirmation Modal: Save Changes */}
       <ConfirmModal
         isOpen={showConfirm}
         title={isEditing ? 'Save Changes' : 'Create Place'}
@@ -554,6 +679,22 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
         isLoading={isSubmitting}
         onConfirm={handleConfirmSave}
         onCancel={() => setShowConfirm(false)}
+      />
+
+      {/* Confirmation Modal: Discard Unsaved Changes */}
+      <ConfirmModal
+        isOpen={showDiscardConfirm}
+        title="Discard Unsaved Changes?"
+        message="You have unsaved changes in this place record. Are you sure you want to discard them and close?"
+        actionType="delete"
+        confirmText="Yes, Discard Changes"
+        cancelText="Keep Editing"
+        onConfirm={() => {
+          setShowDiscardConfirm(false);
+          resetForm(placeToEdit);
+          onClose();
+        }}
+        onCancel={() => setShowDiscardConfirm(false)}
       />
 
       {/* Google Maps Categorized Photo Picker Modal */}

@@ -35,6 +35,18 @@ export interface GmapsParsedPlace {
 const COMMON_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
 
+export function cleanPlaceName(raw: string): string {
+  if (!raw) return '';
+  let s = raw.replace(/\+/g, ' ');
+  try {
+    s = decodeURIComponent(s);
+  } catch {
+    // fallback if malformed URI sequence
+  }
+  s = s.replace(/\+/g, ' ');
+  return s.replace(/\s+/g, ' ').trim();
+}
+
 function classifyPhoto(idx: number, caption: string = '', category: string = ''): string {
   const text = `${caption} ${category}`.toLowerCase();
 
@@ -178,13 +190,15 @@ export async function parseGoogleMapsUrl(inputUrl: string): Promise<GmapsParsedP
 
   // 2. Extract Place Name from URL
   let name = '';
-  const nameMatch = finalUrl.match(/\/place\/([^/@?]+)/);
+  let nameMatch = finalUrl.match(/\/place\/([^/@?]+)/);
+  if (!nameMatch) {
+    nameMatch = finalUrl.match(/\/search\/([^/@?]+)/);
+  }
+  if (!nameMatch) {
+    nameMatch = finalUrl.match(/[?&](?:q|query)=([^&]+)/);
+  }
   if (nameMatch) {
-    try {
-      name = decodeURIComponent(nameMatch[1].replace(/\+/g, ' '));
-    } catch {
-      name = nameMatch[1].replace(/\+/g, ' ');
-    }
+    name = cleanPlaceName(nameMatch[1]);
   }
 
   // 3. Extract Coordinates from URL
@@ -240,8 +254,8 @@ export async function parseGoogleMapsUrl(inputUrl: string): Promise<GmapsParsedP
           const embedData = JSON.parse(initMatch[1]);
           const placeDetails = embedData[21]?.[3];
           if (Array.isArray(placeDetails)) {
-            if (placeDetails[1] && (!name || name === 'place')) {
-              name = placeDetails[1];
+            if (placeDetails[1]) {
+              name = cleanPlaceName(placeDetails[1]);
             }
             if (typeof placeDetails[3] === 'number') {
               rating = placeDetails[3];
@@ -330,7 +344,7 @@ export async function parseGoogleMapsUrl(inputUrl: string): Promise<GmapsParsedP
   });
 
   return {
-    name: name || 'Discovered Place',
+    name: cleanPlaceName(name) || 'Discovered Place',
     type: placeType,
     category,
     address,
