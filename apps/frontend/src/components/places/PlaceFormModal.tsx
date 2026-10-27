@@ -1,12 +1,25 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Upload, Trash2, MapPin, Navigation, FileText, Image as ImageIcon } from 'lucide-react';
+import {
+  X,
+  Upload,
+  Trash2,
+  MapPin,
+  Navigation,
+  FileText,
+  Image as ImageIcon,
+  Sparkles,
+  Link as LinkIcon,
+  Loader2,
+  Layers,
+} from 'lucide-react';
 import { ConfirmModal } from '../common/ConfirmModal';
-import { uploadPlaceFile } from '@/lib/api';
+import { uploadPlaceFile, parseGmapsUrl } from '@/lib/api';
 import { getUserLocation } from '@/lib/geo';
 import { useToast } from '../common/Toast';
-import type { Place, PlaceType, PlaceFile } from '@/types';
+import { GmapsPhotoPickerModal } from './GmapsPhotoPickerModal';
+import type { Place, PlaceType, PlaceFile, GmapsPhoto } from '@/types';
 
 interface PlaceFormModalProps {
   isOpen: boolean;
@@ -52,10 +65,86 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
 
+  // Google Maps Auto-Fill & Photo Picker state
+  const [gmapsInputUrl, setGmapsInputUrl] = useState('');
+  const [isParsingGmaps, setIsParsingGmaps] = useState(false);
+  const [gmapsPhotos, setGmapsPhotos] = useState<GmapsPhoto[]>([]);
+  const [gmapsGroups, setGmapsGroups] = useState<string[]>([]);
+  const [showPhotoPicker, setShowPhotoPicker] = useState(false);
+
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleAutoFillGmaps = async () => {
+    const rawUrl = gmapsInputUrl.trim() || gmapsUrl.trim();
+    if (!rawUrl) {
+      toast.error('Please paste a Google Maps link first.');
+      return;
+    }
+
+    setIsParsingGmaps(true);
+    try {
+      const res = await parseGmapsUrl(rawUrl);
+      const data = res.data;
+
+      if (data.name) setName(data.name);
+      if (data.type) setType(data.type);
+      if (data.address) setAddress(data.address);
+      if (data.gmaps_url) setGmapsUrl(data.gmaps_url);
+      if (data.latitude !== null && data.latitude !== undefined) {
+        setLatitude(String(data.latitude));
+      }
+      if (data.longitude !== null && data.longitude !== undefined) {
+        setLongitude(String(data.longitude));
+      }
+
+      // Add curator notes if rating or website exists
+      const notes: string[] = [];
+      if (description) notes.push(description);
+      if (data.rating) {
+        notes.push(`Rating: ${data.rating.toFixed(1)} ★ (${data.reviews_count || 'reviews'})`);
+      }
+      if (data.website) {
+        notes.push(`Website / Link: ${data.website}`);
+      }
+      if (!description && notes.length > 0) {
+        setDescription(notes.join('\n'));
+      }
+
+      // Store photos & groups
+      if (data.photos && data.photos.length > 0) {
+        setGmapsPhotos(data.photos);
+        setGmapsGroups(data.groups || ['All']);
+        setShowPhotoPicker(true);
+        toast.success(`Found ${data.photos.length} photos! Auto-filled details.`);
+      } else {
+        toast.success('Place details auto-filled successfully!');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to auto-fill from Google Maps.');
+    } finally {
+      setIsParsingGmaps(false);
+    }
+  };
+
+  const handleAttachGmapsPhotos = (selected: GmapsPhoto[]) => {
+    const newFiles: PlaceFile[] = selected.map((p, idx) => ({
+      id: `gmaps_${Date.now()}_${idx}`,
+      name: `${(name || 'place').toLowerCase().replace(/\s+/g, '_')}_photo_${idx + 1}.jpg`,
+      url: p.url,
+      mime_type: 'image/jpeg',
+    }));
+
+    setFiles((prev) => {
+      const existingUrls = new Set(prev.map((f) => f.url));
+      const filtered = newFiles.filter((f) => !existingUrls.has(f.url));
+      return [...prev, ...filtered];
+    });
+
+    toast.success(`Attached ${selected.length} photos from Google Maps!`);
+  };
 
   const handleDetectLocation = async () => {
     setIsLocating(true);
@@ -163,6 +252,58 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
 
           {/* Form Fields */}
           <form onSubmit={handleSubmitForm} className="p-6 overflow-y-auto space-y-5">
+            {/* Google Maps Smart Auto-Fill */}
+            <div className="p-4 bg-[#F5C800]/15 dark:bg-[#F5C800]/10 border-2 border-[#111111] dark:border-white relative">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-black uppercase tracking-wider text-[#111111] dark:text-white flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#E63329]" />
+                  <span>SMART IMPORT // GOOGLE MAPS LINK</span>
+                </span>
+                <span className="text-[9px] font-mono uppercase bg-[#111111] text-white dark:bg-white dark:text-[#111111] px-1.5 py-0.5 font-bold">
+                  AUTO-FILL & PHOTOS
+                </span>
+              </div>
+              <p className="text-[10px] text-[#666666] dark:text-[#AAAAAA] mb-2.5 font-mono">
+                PASTE ANY GOOGLE MAPS LINK (E.G. MAPS.APP.GOO.GL/...) TO AUTO-FILL PLACE DETAILS & SELECT CATEGORIZED PHOTOS.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="url"
+                    value={gmapsInputUrl}
+                    onChange={(e) => setGmapsInputUrl(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAutoFillGmaps();
+                      }
+                    }}
+                    placeholder="https://maps.app.goo.gl/... or google.com/maps/place/..."
+                    className="w-full pl-8 pr-3 py-2 bg-white dark:bg-[#20242B] border-2 border-[#111111] dark:border-white text-xs font-mono text-[#111111] dark:text-white placeholder-[#888888] focus:outline-none focus:bg-[#FFFDE6] dark:focus:bg-[#2A2E37]"
+                  />
+                  <LinkIcon className="w-3.5 h-3.5 text-[#888888] absolute left-2.5 top-1/2 -translate-y-1/2" />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAutoFillGmaps}
+                  disabled={isParsingGmaps}
+                  className="px-4 py-2 bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider hover:bg-[#E63329] hover:text-white dark:hover:bg-[#E63329] dark:hover:text-white transition-colors flex items-center justify-center gap-1.5 shrink-0 shadow-[2px_2px_0px_#111111] dark:shadow-[2px_2px_0px_white]"
+                >
+                  {isParsingGmaps ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>PARSING...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5 text-[#F5C800]" />
+                      <span>AUTO-FILL</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
             {/* Name */}
             <div>
               <label className="block text-[11px] font-black uppercase tracking-wider text-[#111111] dark:text-white mb-1.5">
@@ -322,26 +463,63 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
                 />
               </label>
 
+              {/* Select Photos from Google Maps Button */}
+              {gmapsPhotos.length > 0 && (
+                <div className="mt-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowPhotoPicker(true)}
+                    className="w-full py-2.5 px-3 border-2 border-[#111111] dark:border-white bg-[#F5C800] text-[#111111] hover:bg-[#e0b700] text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-[2px_2px_0px_#111111] dark:shadow-[2px_2px_0px_white] transition-all"
+                  >
+                    <Layers className="w-4 h-4" />
+                    <span>CHOOSE PHOTOS FROM GOOGLE MAPS ({gmapsPhotos.length} AVAILABLE)</span>
+                  </button>
+                </div>
+              )}
+
               {files.length > 0 && (
                 <div className="mt-3 space-y-1.5">
-                  {files.map((file) => (
-                    <div
-                      key={file.id}
-                      className="p-2 border-2 border-[#111111] dark:border-white bg-white dark:bg-[#20242B] flex items-center justify-between text-xs"
-                    >
-                      <div className="flex items-center gap-2 truncate">
-                        <FileText className="w-4 h-4 text-[#888888] shrink-0" />
-                        <span className="font-mono text-xs truncate">{file.name}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFile(file.id)}
-                        className="p-1 hover:text-[#E63329] transition-colors ml-2 shrink-0"
+                  {files.map((file) => {
+                    const isImg =
+                      file.mime_type?.startsWith('image/') ||
+                      /\.(jpg|jpeg|png|webp|gif)$/i.test(file.name) ||
+                      file.url.includes('googleusercontent.com');
+
+                    return (
+                      <div
+                        key={file.id}
+                        className="p-2 border-2 border-[#111111] dark:border-white bg-white dark:bg-[#20242B] flex items-center justify-between text-xs"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-2.5 truncate">
+                          {isImg && file.url ? (
+                            <img
+                              src={file.url}
+                              alt={file.name}
+                              className="w-8 h-8 object-cover border border-[#111111] dark:border-white shrink-0"
+                            />
+                          ) : (
+                            <FileText className="w-4 h-4 text-[#888888] shrink-0" />
+                          )}
+                          <div className="truncate">
+                            <span className="font-mono text-xs font-bold truncate block">{file.name}</span>
+                            {file.url.includes('googleusercontent.com') && (
+                              <span className="text-[9px] font-mono text-[#E63329] uppercase font-bold">
+                                Google Maps CDN
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFile(file.id)}
+                          className="p-1 hover:text-[#E63329] transition-colors ml-2 shrink-0"
+                          title="Remove file"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -376,6 +554,16 @@ export const PlaceFormModal: React.FC<PlaceFormModalProps> = ({
         isLoading={isSubmitting}
         onConfirm={handleConfirmSave}
         onCancel={() => setShowConfirm(false)}
+      />
+
+      {/* Google Maps Categorized Photo Picker Modal */}
+      <GmapsPhotoPickerModal
+        isOpen={showPhotoPicker}
+        placeName={name || 'Place'}
+        photos={gmapsPhotos}
+        groups={gmapsGroups}
+        onClose={() => setShowPhotoPicker(false)}
+        onAttachPhotos={handleAttachGmapsPhotos}
       />
     </>
   );

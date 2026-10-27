@@ -1,5 +1,29 @@
 export type PlaceType = 'Restaurant' | 'Mall' | 'Public spaces' | 'other';
 
+export interface GmapsPhoto {
+  id: string;
+  url: string;
+  thumbnail: string;
+  caption?: string;
+  author?: string;
+  group: string;
+}
+
+export interface GmapsParsedPlace {
+  name: string;
+  type: PlaceType;
+  category: string;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  gmaps_url: string;
+  rating: number | null;
+  reviews_count: string;
+  website: string;
+  photos: GmapsPhoto[];
+  groups: string[];
+}
+
 export interface PlaceFile {
   id: string;
   name: string;

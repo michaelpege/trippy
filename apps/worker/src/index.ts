@@ -105,6 +105,12 @@ export default {
       // -----------------------------------------------------------------------
       // Places CRUD
       // -----------------------------------------------------------------------
+      if (path === '/api/places/parse-gmaps' && method === 'POST') {
+        return withPermission(request, env, corsConfig, 'places:create', (req) =>
+          placesHandler.parseGmaps(req, env, corsConfig)
+        );
+      }
+
       if (path === '/api/places') {
         if (method === 'GET') {
           return withPermission(request, env, corsConfig, 'places:read', (req) =>

@@ -7,6 +7,7 @@ import type {
   Place,
   PlaceType,
   PlaceFile,
+  GmapsParsedPlace,
   Trip,
   Roulette,
   RouletteItem,
@@ -145,6 +146,13 @@ export async function uploadPlaceFile(file: File): Promise<{ file: PlaceFile }> 
   return apiFetch('/api/storage/upload', {
     method: 'POST',
     body: formData,
+  });
+}
+
+export async function parseGmapsUrl(url: string): Promise<{ success: boolean; data: GmapsParsedPlace }> {
+  return apiFetch('/api/places/parse-gmaps', {
+    method: 'POST',
+    body: JSON.stringify({ url }),
   });
 }
 

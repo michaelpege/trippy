@@ -6,6 +6,7 @@
 
 import { getSupabaseClient } from '../client/supabase_client';
 import { PlacesRepository } from '../repository/places_repository';
+import { parseGoogleMapsUrl } from '../service/gmaps_scraper';
 import { jsonResponse, errorResponse } from '../middleware/cors';
 import type { Env, CorsConfig, AuthUser, PlaceType, PlaceFile } from '../types';
 
@@ -160,6 +161,29 @@ export class PlacesHandler {
     } catch (err) {
       console.error('Failed to delete place:', err);
       return errorResponse(err instanceof Error ? err.message : 'Failed to delete place', 500, corsConfig);
+    }
+  }
+
+  /**
+   * POST /api/places/parse-gmaps
+   * Resolves Google Maps link & extracts metadata + categorized photos
+   */
+  async parseGmaps(request: Request, env: Env, corsConfig: CorsConfig): Promise<Response> {
+    try {
+      const body = (await request.json().catch(() => null)) as { url?: string };
+      if (!body || !body.url || typeof body.url !== 'string') {
+        return errorResponse('Missing required field: "url"', 400, corsConfig);
+      }
+
+      const parsed = await parseGoogleMapsUrl(body.url);
+      return jsonResponse({ success: true, data: parsed }, 200, corsConfig);
+    } catch (err) {
+      console.error('Failed to parse Google Maps URL:', err);
+      return errorResponse(
+        err instanceof Error ? err.message : 'Failed to parse Google Maps link',
+        500,
+        corsConfig
+      );
     }
   }
 }
