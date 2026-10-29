@@ -186,11 +186,13 @@ export const PeekABooDeck: React.FC<PeekABooDeckProps> = ({
     (winner?.quotes && winner.quotes[0]) ||
     winner?.quote;
 
-  const gmapsSearchUrl = winner
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-        `${winner.title} ${winner.subtitle || ''}`
-      )}`
-    : '#';
+  const getPlaceGmapsUrl = (place: { name: string; address?: string; gmaps_url?: string }) => {
+    if (place.gmaps_url && place.gmaps_url.trim().startsWith('http')) {
+      return place.gmaps_url.trim();
+    }
+    const query = [place.name, place.address].filter(Boolean).join(' ');
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  };
 
   return (
     <div className="space-y-6">
@@ -511,7 +513,7 @@ export const PeekABooDeck: React.FC<PeekABooDeckProps> = ({
 
             {/* Modal Body */}
             <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
-              {/* Giant Selected Card Display */}
+              {/* Main Winner Card */}
               <div className="p-6 bg-[#F5C800] text-[#111111] border-[3px] border-[#111111] shadow-[4px_4px_0px_0px_#111111] space-y-4 relative">
                 <div className="flex items-center justify-between border-b-2 border-[#111111]/20 pb-2">
                   <span className="font-mono text-[10px] font-black tracking-widest uppercase">
@@ -540,6 +542,12 @@ export const PeekABooDeck: React.FC<PeekABooDeckProps> = ({
                       {winner.subtitle}
                     </p>
                   )}
+
+                  {winner.description && (
+                    <p className="text-xs font-mono text-[#111111]/90 max-w-md mx-auto pt-1 leading-relaxed">
+                      {winner.description}
+                    </p>
+                  )}
                 </div>
 
                 {/* Highlighted Quote Callout */}
@@ -554,19 +562,116 @@ export const PeekABooDeck: React.FC<PeekABooDeckProps> = ({
                   </div>
                 )}
 
-                {/* Action Link: Google Maps Search */}
-                <div className="pt-2 text-center">
-                  <a
-                    href={gmapsSearchUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#111111] text-white hover:bg-[#1A3A6B] text-xs font-black uppercase tracking-wider transition border border-[#111111]"
-                  >
-                    <span>OPEN IN GOOGLE MAPS</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
+                {/* Single Place CTA: When winner is an individual place */}
+                {winner.type === 'places' && (
+                  <div className="pt-2 text-center space-y-2">
+                    {winner.address && (
+                      <p className="text-xs font-mono text-[#111111]/80 flex items-center justify-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-[#E63329]" />
+                        <span>{winner.address}</span>
+                      </p>
+                    )}
+                    <a
+                      href={getPlaceGmapsUrl({
+                        name: winner.title,
+                        address: winner.address,
+                        gmaps_url: winner.gmaps_url,
+                      })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#111111] text-white hover:bg-[#1A3A6B] text-xs font-black uppercase tracking-wider transition border-2 border-[#111111] shadow-[2px_2px_0px_0px_#111111]"
+                    >
+                      <span>OPEN IN GOOGLE MAPS</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                )}
               </div>
+
+              {/* Trip Detail: Ordered Destinations / Stops with Place-Level CTAs */}
+              {winner.type === 'trips' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between border-b-2 border-[#111111] dark:border-white pb-2">
+                    <span className="text-xs font-black uppercase tracking-wider text-[#111111] dark:text-white flex items-center gap-2">
+                      <Route className="w-4 h-4 text-[#1A3A6B] dark:text-[#F5C800]" />
+                      <span>ITINERARY & DESTINATIONS ({winner.trip_places?.length || 0} STOPS)</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-[#888888]">
+                      ORDERED ROUTE
+                    </span>
+                  </div>
+
+                  {winner.trip_places && winner.trip_places.length > 0 ? (
+                    <div className="space-y-3">
+                      {winner.trip_places.map((place, pIdx) => (
+                        <div
+                          key={place.id || place.place_id || pIdx}
+                          className="p-4 bg-[#F7F5F0] dark:bg-[#16191E] border-2 border-[#111111] dark:border-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[2px_2px_0px_0px_#111111] dark:shadow-[2px_2px_0px_0px_#FFFFFF]"
+                        >
+                          <div className="space-y-1.5 flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 bg-[#111111] text-[#F5C800] text-[10px] font-mono font-black">
+                                STOP #{pIdx + 1}
+                              </span>
+                              <h4 className="text-sm font-black uppercase tracking-tight text-[#111111] dark:text-white truncate">
+                                {place.name}
+                              </h4>
+                              {place.type && (
+                                <span className="px-1.5 py-0.2 bg-[#E63329] text-white text-[9px] font-mono font-bold uppercase">
+                                  {place.type}
+                                </span>
+                              )}
+                            </div>
+
+                            {place.address && (
+                              <p className="text-xs font-mono text-[#888888] flex items-center gap-1.5">
+                                <MapPin className="w-3 h-3 text-[#E63329] flex-shrink-0" />
+                                <span className="truncate">{place.address}</span>
+                              </p>
+                            )}
+
+                            {(place.visit_time || place.notes) && (
+                              <div className="text-[11px] font-mono text-[#1A3A6B] dark:text-[#F5C800] flex flex-wrap items-center gap-2 pt-0.5">
+                                {place.visit_time && (
+                                  <span className="font-bold">⏰ {place.visit_time}</span>
+                                )}
+                                {place.notes && (
+                                  <span className="italic">“{place.notes}”</span>
+                                )}
+                              </div>
+                            )}
+
+                            {place.description && (
+                              <p className="text-xs font-mono text-[#111111]/70 dark:text-white/70 line-clamp-2 pt-0.5">
+                                {place.description}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Dedicated CTA for this specific place */}
+                          <div className="flex-shrink-0 pt-2 sm:pt-0">
+                            <a
+                              href={getPlaceGmapsUrl(place)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#111111] dark:bg-white text-white dark:text-[#111111] hover:bg-[#E63329] dark:hover:bg-[#E63329] dark:hover:text-white text-xs font-black uppercase tracking-wider transition border-2 border-[#111111] dark:border-white shadow-[2px_2px_0px_0px_#111111] dark:shadow-[2px_2px_0px_0px_#FFFFFF]"
+                            >
+                              <span>OPEN IN GOOGLE MAPS</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-white dark:bg-[#16191E] border-2 border-dashed border-[#111111]/40 dark:border-white/40 text-center">
+                      <p className="text-xs font-mono text-[#888888]">
+                        No specific destination places configured for this trip yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Other Clues Pool (if multiple quotes were configured) */}
               {winner.quotes && winner.quotes.length > 1 && (

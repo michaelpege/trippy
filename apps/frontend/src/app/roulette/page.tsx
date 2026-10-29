@@ -16,6 +16,7 @@ import {
   Sparkles,
   ExternalLink,
   Sliders,
+  Eye,
 } from 'lucide-react';
 import { RouletteWheel } from '@/components/roulette/RouletteWheel';
 import { RouletteFormModal } from '@/components/roulette/RouletteFormModal';
@@ -260,8 +261,17 @@ function RouletteView() {
                       )}
 
                       <Link
+                        href={`/roulette/share?id=${activeRoulette.id}&preview=true`}
+                        className="px-3 py-1.5 bg-[#F5C800] text-[#111111] hover:bg-[#111111] hover:text-[#F5C800] border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#111111]"
+                        title="Preview recipient POV (Zero DB Writes)"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>PREVIEW</span>
+                      </Link>
+
+                      <Link
                         href={`/roulette/detail/?id=${activeRoulette.id}`}
-                        className="px-3 py-1.5 bg-[#F5C800] text-[#111111] hover:bg-[#111111] hover:text-[#F5C800] border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider transition-colors flex items-center gap-1.5"
+                        className="px-3 py-1.5 bg-white dark:bg-[#16191E] text-[#111111] dark:text-white hover:bg-[#F5C800] hover:text-[#111111] border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider transition-colors flex items-center gap-1.5"
                       >
                         <Sliders className="w-3.5 h-3.5" />
                         <span>DETAILS & EDIT</span>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Copy, Check, Share2, Shield, Lock, Mail, Disc, Sparkles } from 'lucide-react';
+import { X, Copy, Check, Share2, Shield, Lock, Mail, Disc, Sparkles, Eye } from 'lucide-react';
 import { useToast } from '../common/Toast';
 import type { Roulette } from '@/types';
 
@@ -95,6 +95,16 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
                   {copiedWheel ? <Check className="w-4 h-4 text-[#111111]" /> : <Copy className="w-4 h-4" />}
                   <span>{copiedWheel ? 'COPIED' : 'COPY'}</span>
                 </button>
+                <a
+                  href={`${wheelShareUrl}&preview=true`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2 bg-[#111111] dark:bg-white text-white dark:text-[#111111] hover:bg-[#E63329] dark:hover:bg-[#E63329] dark:hover:text-white border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-black uppercase tracking-wider rounded-none flex items-center gap-1.5 transition flex-shrink-0"
+                  title="Open Recipient Simulation Preview (Zero DB Writes)"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>PREVIEW</span>
+                </a>
               </div>
             </div>
           )}
@@ -121,6 +131,16 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
                   {copiedCards ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
                   <span>{copiedCards ? 'COPIED' : 'COPY'}</span>
                 </button>
+                <a
+                  href={`${cardsShareUrl}&preview=true`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2 bg-[#111111] dark:bg-white text-white dark:text-[#111111] hover:bg-[#1A3A6B] dark:hover:bg-[#1A3A6B] dark:hover:text-white border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-black uppercase tracking-wider rounded-none flex items-center gap-1.5 transition flex-shrink-0"
+                  title="Open Recipient Simulation Preview (Zero DB Writes)"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>PREVIEW</span>
+                </a>
               </div>
             </div>
           )}

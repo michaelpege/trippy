@@ -67,6 +67,8 @@ function SharedPeekABooContent() {
     process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
     '500705610156-2j6108eea4i6242mtf5reb0uoj6jrvqq.apps.googleusercontent.com';
 
+  const isPreview = searchParams.get('preview') === 'true';
+
   const loadRoulette = async (tokenOverride?: string, googleTokenOverride?: string) => {
     if (!rouletteId) {
       setAuthError('Missing roulette ID in URL parameter.');
@@ -79,23 +81,26 @@ function SharedPeekABooContent() {
       const res = await fetchSharedRoulette(rouletteId, {
         token: tokenOverride || passcode || undefined,
         googleToken: stored || undefined,
+        preview: isPreview,
       });
 
       setRoulette(res.roulette);
       setLast5Runs(res.last5Runs || []);
-      setAuthenticatedAs(res.authenticatedAs);
+      setAuthenticatedAs(res.authenticatedAs || (isPreview ? 'Admin Preview (Simulation)' : null));
       setProtectionType(res.protectionType || res.roulette.protection_type || 'google');
       setAuthError(null);
 
-      // If user is not authenticated, automatically open the sign-in modal
-      if (res.requiresAuth || !res.authenticatedAs) {
+      // If user is not authenticated and not in preview mode, automatically open the sign-in modal
+      if (!isPreview && (res.requiresAuth || !res.authenticatedAs)) {
         setShowAuthModal(true);
       } else {
         setShowAuthModal(false);
       }
     } catch (err: any) {
       setAuthError(err.message || 'Access restricted');
-      setShowAuthModal(true);
+      if (!isPreview) {
+        setShowAuthModal(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -156,8 +161,8 @@ function SharedPeekABooContent() {
   const handleSharedSpin = async (pickedItem?: RouletteItem): Promise<RouletteItem> => {
     if (!rouletteId) throw new Error('Missing roulette ID');
 
-    // If not authenticated, prompt the sign-in modal
-    if (!authenticatedAs) {
+    // If not authenticated and not in preview mode, prompt the sign-in modal
+    if (!authenticatedAs && !isPreview) {
       setShowAuthModal(true);
       toast.error('Authentication required before picking.');
       throw new Error('Authentication required');
@@ -166,15 +171,18 @@ function SharedPeekABooContent() {
     const res = await spinSharedRoulette(rouletteId, {
       token: passcode || undefined,
       googleToken: getStoredToken() || undefined,
+      preview: isPreview,
     });
 
-    toast.success(`Selected: ${res.winner.title}! Result saved in audit trail.`);
-
-    // Prepend newly generated run to the audit trail
-    if (res.auditLog) {
-      setLast5Runs((prev) => [res.auditLog!, ...prev.slice(0, 4)]);
+    if (isPreview || res.simulated) {
+      toast.success(`[PREVIEW SIMULATION] Selected: ${res.winner.title}! Zero database records written.`);
     } else {
-      loadRoulette();
+      toast.success(`Selected: ${res.winner.title}! Result saved in audit trail.`);
+      if (res.auditLog) {
+        setLast5Runs((prev) => [res.auditLog!, ...prev.slice(0, 4)]);
+      } else {
+        loadRoulette();
+      }
     }
 
     return res.winner || pickedItem || (roulette?.items && roulette.items[0]);
@@ -219,6 +227,48 @@ function SharedPeekABooContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      {/* Top Preview Mode Simulation Bar */}
+      {isPreview && (
+        <div className="bg-[#111111] text-white border-[3px] border-[#F5C800] p-4 shadow-[4px_4px_0px_0px_#F5C800]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <span className="w-3 h-3 bg-[#F5C800] animate-ping rounded-full flex-shrink-0" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-black text-[#F5C800] uppercase tracking-widest">
+                    [ADMIN PREVIEW // RECIPIENT SIMULATION]
+                  </span>
+                  <span className="px-1.5 py-0.2 bg-[#E63329] text-white text-[9px] font-mono font-bold uppercase">
+                    ZERO DB WRITES
+                  </span>
+                </div>
+                <p className="text-xs text-[#888888] font-mono pt-0.5">
+                  Viewing exact recipient POV. Spins/picks are simulated and will NOT write to database or audit logs.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
+              {supportsWheel && (
+                <Link
+                  href={`/roulette/share?id=${roulette.id}&preview=true`}
+                  className="px-3 py-1.5 bg-[#F5C800] hover:bg-white text-[#111111] text-[10px] font-black uppercase tracking-wider transition flex items-center gap-1 border border-[#111111]"
+                >
+                  <Disc className="w-3 h-3 text-[#E63329]" />
+                  <span>SWITCH TO WHEEL PREVIEW</span>
+                </Link>
+              )}
+              <Link
+                href={`/roulette/detail?id=${roulette.id}`}
+                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-[10px] font-mono font-bold uppercase tracking-wider transition border border-white/30"
+              >
+                EXIT PREVIEW
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Header */}
       <div className="p-6 bg-white dark:bg-[#16191E] border-[3px] border-[#111111] dark:border-white corner-rule-yellow flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -241,7 +291,7 @@ function SharedPeekABooContent() {
         <div className="flex flex-wrap items-center gap-2.5">
           {supportsWheel && (
             <Link
-              href={`/roulette/share?id=${roulette.id}`}
+              href={`/roulette/share?id=${roulette.id}${isPreview ? '&preview=true' : ''}`}
               className="px-3.5 py-2 border-2 border-[#111111] dark:border-white bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-black uppercase tracking-wider hover:bg-[#E63329] hover:text-white transition flex items-center gap-1.5"
             >
               <Disc className="w-3.5 h-3.5 text-[#E63329]" />

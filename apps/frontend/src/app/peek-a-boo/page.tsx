@@ -15,6 +15,7 @@ import {
   History,
   AlertCircle,
   ExternalLink,
+  Eye,
 } from 'lucide-react';
 import { PeekABooDeck } from '@/components/peek-a-boo/PeekABooDeck';
 import { RouletteFormModal } from '@/components/roulette/RouletteFormModal';
@@ -166,6 +167,15 @@ function PeekABooView() {
 
         {activeRoulette && (
           <div className="flex flex-wrap items-center gap-2.5">
+            <Link
+              href={`/peek-a-boo/share?id=${activeRoulette.id}&preview=true`}
+              className="px-3.5 py-2 border-2 border-[#111111] dark:border-white bg-[#F5C800] text-[#111111] text-xs font-black uppercase tracking-wider hover:bg-[#111111] hover:text-[#F5C800] transition flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#111111]"
+              title="Preview Recipient POV (Zero DB Writes)"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>PREVIEW CARDS</span>
+            </Link>
+
             <Link
               href={`/roulette?id=${activeRoulette.id}`}
               className="px-3.5 py-2 border-2 border-[#111111] dark:border-white bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-black uppercase tracking-wider hover:bg-[#E63329] hover:text-white transition flex items-center gap-1.5"

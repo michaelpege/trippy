@@ -74,7 +74,8 @@ export async function apiFetch<T>(
           path === '/login' ||
           path.startsWith('/login/') ||
           path.startsWith('/setup') ||
-          path.startsWith('/roulette/share');
+          path.startsWith('/roulette/share') ||
+          path.startsWith('/peek-a-boo/share');
         if (!isPublic) {
           window.location.replace(`/login?expired=1&from=${encodeURIComponent(path)}`);
         }
@@ -271,7 +272,7 @@ export async function spinRouletteAdmin(id: string): Promise<{
 
 export async function fetchSharedRoulette(
   id: string,
-  options?: { token?: string; googleToken?: string }
+  options?: { token?: string; googleToken?: string; preview?: boolean }
 ): Promise<{
   roulette: Pick<
     Roulette,
@@ -286,8 +287,9 @@ export async function fetchSharedRoulette(
   if (options?.token) {
     headers['X-Access-Token'] = options.token;
   }
+  const previewParam = options?.preview ? '?preview=true' : '';
   return apiFetch(
-    `/api/roulettes/share/${id}`,
+    `/api/roulettes/share/${id}${previewParam}`,
     { headers },
     options?.googleToken
   );
@@ -295,20 +297,22 @@ export async function fetchSharedRoulette(
 
 export async function spinSharedRoulette(
   id: string,
-  options?: { token?: string; googleToken?: string }
+  options?: { token?: string; googleToken?: string; preview?: boolean }
 ): Promise<{
   winner: RouletteItem;
   auditLog?: RouletteAuditLog;
-  auditLogId: string;
-  executedAt: string;
+  auditLogId?: string;
+  executedAt?: string;
+  simulated?: boolean;
   message: string;
 }> {
   const headers: Record<string, string> = {};
   if (options?.token) {
     headers['X-Access-Token'] = options.token;
   }
+  const previewParam = options?.preview ? '?preview=true' : '';
   return apiFetch(
-    `/api/roulettes/share/${id}/spin`,
+    `/api/roulettes/share/${id}/spin${previewParam}`,
     {
       method: 'POST',
       headers,

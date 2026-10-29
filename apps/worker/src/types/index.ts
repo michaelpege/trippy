@@ -83,6 +83,18 @@ export interface Trip {
   updated_at?: string;
 }
 
+export interface TripPlaceDetail {
+  id?: string;
+  place_id: string;
+  name: string;
+  type?: string;
+  address?: string;
+  gmaps_url?: string;
+  visit_time?: string;
+  notes?: string;
+  description?: string;
+}
+
 export interface RouletteItem {
   item_id: string;
   title: string;
@@ -91,6 +103,10 @@ export interface RouletteItem {
   weight: number;
   quote?: string;
   quotes?: string[];
+  description?: string;
+  address?: string;
+  gmaps_url?: string;
+  trip_places?: TripPlaceDetail[];
 }
 
 export interface Roulette {

@@ -442,15 +442,23 @@ function RouletteDetailContent() {
             <span>SHARE LINK</span>
           </button>
 
-          <button
-            onClick={() => {
-              wheelSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="px-4 py-2 border-2 border-[#111111] dark:border-white bg-[#1A3A6B] text-white text-xs font-black uppercase tracking-wider hover:bg-[#152e55] transition flex items-center gap-1.5"
+          <Link
+            href={`/roulette/share?id=${rouletteId}&preview=true`}
+            className="px-3.5 py-2 border-2 border-[#111111] dark:border-white bg-[#F5C800] text-[#111111] text-xs font-black uppercase tracking-wider hover:bg-[#111111] hover:text-[#F5C800] transition flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#111111]"
+            title="Preview recipient POV for Wheel format (Zero DB Writes)"
           >
-            <Disc className="w-3.5 h-3.5" />
+            <Eye className="w-3.5 h-3.5" />
             <span>PREVIEW WHEEL</span>
-          </button>
+          </Link>
+
+          <Link
+            href={`/peek-a-boo/share?id=${rouletteId}&preview=true`}
+            className="px-3.5 py-2 border-2 border-[#111111] dark:border-white bg-[#F5C800] text-[#111111] text-xs font-black uppercase tracking-wider hover:bg-[#1A3A6B] hover:text-white transition flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#111111]"
+            title="Preview recipient POV for Peek a Boo Cards format (Zero DB Writes)"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>PREVIEW CARDS</span>
+          </Link>
 
           <button
             onClick={() => setShowSaveConfirm(true)}

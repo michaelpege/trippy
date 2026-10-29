@@ -19,6 +19,7 @@ import {
   Sparkles,
   CheckCircle,
   XCircle,
+  Eye,
 } from 'lucide-react';
 import { RouletteNav } from '@/components/roulette/RouletteNav';
 import { RouletteFormModal } from '@/components/roulette/RouletteFormModal';
@@ -407,6 +408,18 @@ export default function RouletteManagementPage() {
                     >
                       <Share2 className="w-3.5 h-3.5" />
                     </button>
+                    <Link
+                      href={
+                        roulette.rendering_modes?.length === 1 && roulette.rendering_modes[0] === 'cards'
+                          ? `/peek-a-boo/share?id=${roulette.id}&preview=true`
+                          : `/roulette/share?id=${roulette.id}&preview=true`
+                      }
+                      className="p-1.5 border border-[#111111] dark:border-white bg-[#F5C800] text-[#111111] hover:bg-[#111111] hover:text-[#F5C800] transition"
+                      title="Preview Recipient POV (Zero DB Writes)"
+                      aria-label="Preview Recipient POV"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </Link>
                     <button
                       onClick={() => handleEdit(roulette)}
                       className="p-1.5 border border-[#111111] dark:border-white bg-white dark:bg-[#16191E] text-[#111111] dark:text-white hover:bg-[#1A3A6B] hover:text-white transition"

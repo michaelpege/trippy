@@ -2,7 +2,16 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { Sparkles, Trophy, Disc, RotateCw } from 'lucide-react';
+import {
+  Sparkles,
+  Trophy,
+  Disc,
+  RotateCw,
+  MapPin,
+  Route,
+  ExternalLink,
+  X,
+} from 'lucide-react';
 import type { RouletteItem } from '@/types';
 
 interface RouletteWheelProps {
@@ -28,8 +37,17 @@ export const RouletteWheel: React.FC<RouletteWheelProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [winner, setWinner] = useState<RouletteItem | null>(null);
+  const [showWinnerModal, setShowWinnerModal] = useState(false);
   const rotationRef = useRef<number>(0);
   const animationFrameRef = useRef<number | null>(null);
+
+  const getPlaceGmapsUrl = (place: { name: string; address?: string; gmaps_url?: string }) => {
+    if (place.gmaps_url && place.gmaps_url.trim().startsWith('http')) {
+      return place.gmaps_url.trim();
+    }
+    const query = [place.name, place.address].filter(Boolean).join(' ');
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  };
 
   const totalWeight = items.reduce((sum, it) => sum + (Math.max(1, Number(it.weight) || 1)), 0);
 
@@ -193,6 +211,7 @@ export const RouletteWheel: React.FC<RouletteWheelProps> = ({
           drawWheel(rotationRef.current);
           setSpinning(false);
           setWinner(pickedItem);
+          setShowWinnerModal(true);
 
           // Confetti celebration
           confetti({
@@ -243,9 +262,10 @@ export const RouletteWheel: React.FC<RouletteWheelProps> = ({
 
       {/* Winner Display Banner */}
       {winner && (
-        <div className="mt-6 w-full max-w-sm p-4 bg-[#F5C800] text-[#111111] border-[3px] border-[#111111] dark:border-white animate-in zoom-in-95 text-center relative">
-          <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#111111]/70 mb-1">
-            ROULETTE RESULT PICKED
+        <div className="mt-6 w-full max-w-sm p-4 bg-[#F5C800] text-[#111111] border-[3px] border-[#111111] dark:border-white animate-in zoom-in-95 text-center relative shadow-[4px_4px_0px_0px_#111111] dark:shadow-[4px_4px_0px_0px_#FFFFFF]">
+          <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#111111]/70 mb-1 flex items-center justify-center gap-1.5">
+            <Trophy className="w-3.5 h-3.5 text-[#111111]" />
+            <span>ROULETTE RESULT PICKED</span>
           </div>
           <div className="text-xl font-black uppercase tracking-tight text-[#111111] leading-tight">
             {winner.title}
@@ -259,6 +279,207 @@ export const RouletteWheel: React.FC<RouletteWheelProps> = ({
               CATEGORY: {winner.type}
             </div>
           )}
+
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <button
+              onClick={() => setShowWinnerModal(true)}
+              className="px-3.5 py-1.5 bg-[#111111] text-white hover:bg-[#E63329] text-[10px] font-black uppercase tracking-wider transition border border-[#111111] flex items-center gap-1"
+            >
+              <ExternalLink className="w-3 h-3 text-[#F5C800]" />
+              <span>VIEW FULL DETAILS & MAPS</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Full-Screen / Pop-out Winner Modal */}
+      {showWinnerModal && winner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+          <div className="w-full max-w-lg md:max-w-xl bg-white dark:bg-[#0E1013] border-[4px] border-[#111111] dark:border-white shadow-[8px_8px_0px_0px_#F5C800] dark:shadow-[8px_8px_0px_0px_#E63329] rounded-none overflow-hidden my-auto relative animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-[#F7F5F0] dark:bg-[#111111] border-b-2 border-[#111111] dark:border-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 border-2 border-[#111111] dark:border-white bg-[#F5C800] text-[#111111] flex items-center justify-center">
+                  <Trophy className="w-4 h-4 text-[#111111]" />
+                </div>
+                <div>
+                  <span className="font-mono text-[9px] font-black uppercase tracking-widest text-[#E63329]">
+                    [DESTINATION UNLOCKED // ROULETTE]
+                  </span>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-[#111111] dark:text-white">
+                    Winning Result
+                  </h3>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowWinnerModal(false)}
+                className="p-1.5 border-2 border-[#111111] dark:border-white bg-white dark:bg-[#16191E] text-[#111111] dark:text-white hover:bg-[#E63329] hover:text-white transition rounded-none"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+              <div className="p-6 bg-[#F5C800] text-[#111111] border-[3px] border-[#111111] shadow-[4px_4px_0px_0px_#111111] space-y-4 relative">
+                <div className="flex items-center justify-between border-b-2 border-[#111111]/20 pb-2">
+                  <span className="font-mono text-[10px] font-black tracking-widest uppercase">
+                    ★ WINNING RESULT ★
+                  </span>
+                  <span className="px-2 py-0.5 bg-[#111111] text-[#F5C800] text-[9px] font-black uppercase tracking-wider">
+                    {winner.type.toUpperCase()}
+                  </span>
+                </div>
+
+                <div className="space-y-1 text-center py-2">
+                  <div className="w-14 h-14 mx-auto border-2 border-[#111111] bg-white flex items-center justify-center mb-3 shadow-[2px_2px_0px_0px_#111111]">
+                    {winner.type === 'places' ? (
+                      <MapPin className="w-7 h-7 text-[#E63329]" />
+                    ) : (
+                      <Route className="w-7 h-7 text-[#1A3A6B]" />
+                    )}
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#111111] leading-tight">
+                    {winner.title}
+                  </h2>
+
+                  {winner.subtitle && (
+                    <p className="text-xs sm:text-sm font-mono font-bold text-[#111111]/80">
+                      {winner.subtitle}
+                    </p>
+                  )}
+
+                  {winner.description && (
+                    <p className="text-xs font-mono text-[#111111]/90 max-w-md mx-auto pt-1 leading-relaxed">
+                      {winner.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Single Place CTA */}
+                {winner.type === 'places' && (
+                  <div className="pt-2 text-center space-y-2">
+                    {winner.address && (
+                      <p className="text-xs font-mono text-[#111111]/80 flex items-center justify-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-[#E63329]" />
+                        <span>{winner.address}</span>
+                      </p>
+                    )}
+                    <a
+                      href={getPlaceGmapsUrl({
+                        name: winner.title,
+                        address: winner.address,
+                        gmaps_url: winner.gmaps_url,
+                      })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#111111] text-white hover:bg-[#1A3A6B] text-xs font-black uppercase tracking-wider transition border-2 border-[#111111] shadow-[2px_2px_0px_0px_#111111]"
+                    >
+                      <span>OPEN IN GOOGLE MAPS</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* Trip Detail: Itinerary & Places */}
+              {winner.type === 'trips' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between border-b-2 border-[#111111] dark:border-white pb-2">
+                    <span className="text-xs font-black uppercase tracking-wider text-[#111111] dark:text-white flex items-center gap-2">
+                      <Route className="w-4 h-4 text-[#1A3A6B] dark:text-[#F5C800]" />
+                      <span>ITINERARY & DESTINATIONS ({winner.trip_places?.length || 0} STOPS)</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-[#888888]">
+                      ORDERED ROUTE
+                    </span>
+                  </div>
+
+                  {winner.trip_places && winner.trip_places.length > 0 ? (
+                    <div className="space-y-3">
+                      {winner.trip_places.map((place, pIdx) => (
+                        <div
+                          key={place.id || place.place_id || pIdx}
+                          className="p-4 bg-[#F7F5F0] dark:bg-[#16191E] border-2 border-[#111111] dark:border-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[2px_2px_0px_0px_#111111] dark:shadow-[2px_2px_0px_0px_#FFFFFF]"
+                        >
+                          <div className="space-y-1.5 flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 bg-[#111111] text-[#F5C800] text-[10px] font-mono font-black">
+                                STOP #{pIdx + 1}
+                              </span>
+                              <h4 className="text-sm font-black uppercase tracking-tight text-[#111111] dark:text-white truncate">
+                                {place.name}
+                              </h4>
+                              {place.type && (
+                                <span className="px-1.5 py-0.2 bg-[#E63329] text-white text-[9px] font-mono font-bold uppercase">
+                                  {place.type}
+                                </span>
+                              )}
+                            </div>
+
+                            {place.address && (
+                              <p className="text-xs font-mono text-[#888888] flex items-center gap-1.5">
+                                <MapPin className="w-3 h-3 text-[#E63329] flex-shrink-0" />
+                                <span className="truncate">{place.address}</span>
+                              </p>
+                            )}
+
+                            {(place.visit_time || place.notes) && (
+                              <div className="text-[11px] font-mono text-[#1A3A6B] dark:text-[#F5C800] flex flex-wrap items-center gap-2 pt-0.5">
+                                {place.visit_time && (
+                                  <span className="font-bold">⏰ {place.visit_time}</span>
+                                )}
+                                {place.notes && (
+                                  <span className="italic">“{place.notes}”</span>
+                                )}
+                              </div>
+                            )}
+
+                            {place.description && (
+                              <p className="text-xs font-mono text-[#111111]/70 dark:text-white/70 line-clamp-2 pt-0.5">
+                                {place.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex-shrink-0 pt-2 sm:pt-0">
+                            <a
+                              href={getPlaceGmapsUrl(place)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#111111] dark:bg-white text-white dark:text-[#111111] hover:bg-[#E63329] dark:hover:bg-[#E63329] dark:hover:text-white text-xs font-black uppercase tracking-wider transition border-2 border-[#111111] dark:border-white shadow-[2px_2px_0px_0px_#111111] dark:shadow-[2px_2px_0px_0px_#FFFFFF]"
+                            >
+                              <span>OPEN IN GOOGLE MAPS</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-white dark:bg-[#16191E] border-2 border-dashed border-[#111111]/40 dark:border-white/40 text-center">
+                      <p className="text-xs font-mono text-[#888888]">
+                        No destination places configured for this trip yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 sm:p-5 bg-[#F7F5F0] dark:bg-[#111111] border-t-2 border-[#111111] dark:border-white flex justify-end">
+              <button
+                onClick={() => setShowWinnerModal(false)}
+                className="px-5 py-2.5 bg-[#111111] text-white hover:bg-[#E63329] text-xs font-black uppercase tracking-wider transition border-2 border-[#111111]"
+              >
+                Close Details
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

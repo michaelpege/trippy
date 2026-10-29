@@ -412,9 +412,13 @@ export class RouletteHandler {
   /**
    * POST /api/roulettes/share/:id/spin
    * Executes roulette via protected shareable link and records immutable audit log.
+   * If ?preview=true, executes simulated spin for admin preview without writing to database.
    */
   async sharedSpin(request: Request, env: Env, corsConfig: CorsConfig, id: string): Promise<Response> {
     try {
+      const url = new URL(request.url);
+      const isPreview = url.searchParams.get('preview') === 'true';
+
       const supabase = getSupabaseClient(env);
       const repo = new RouletteRepository(supabase);
       const roulette = await repo.getRouletteById(id);
@@ -430,6 +434,52 @@ export class RouletteHandler {
       const authResult = await this.authenticateSharedAccess(request, roulette, env);
       if (!authResult.allowed) {
         return errorResponse(authResult.error || 'Access denied: Sign in required to spin', authResult.status || 401, corsConfig);
+      }
+
+      // PREVIEW MODE: execute dry-run simulation with ZERO writes to database or audit logs
+      if (isPreview) {
+        const items = roulette.items || [];
+        if (items.length === 0) {
+          return errorResponse('No items configured in this roulette', 400, corsConfig);
+        }
+
+        const totalWeight = items.reduce((sum, item) => sum + (Math.max(1, Number(item.weight) || 1)), 0);
+        let randomVal = Math.random() * totalWeight;
+        let selectedItem: RouletteItem = items[0];
+
+        for (const item of items) {
+          const w = Math.max(1, Number(item.weight) || 1);
+          if (randomVal < w) {
+            selectedItem = item;
+            break;
+          }
+          randomVal -= w;
+        }
+
+        const simLogId = `sim_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`;
+        return jsonResponse(
+          {
+            winner: selectedItem,
+            auditLog: {
+              id: simLogId,
+              roulette_id: roulette.id,
+              roulette_title: roulette.title,
+              type: roulette.type,
+              selected_item_id: selectedItem.item_id,
+              selected_item_title: selectedItem.title,
+              candidate_pool: items,
+              executed_by_type: 'admin',
+              executed_by_identifier: `${authResult.identifier} (Simulation - Zero DB Writes)`,
+              created_at: new Date().toISOString(),
+            },
+            auditLogId: simLogId,
+            executedAt: new Date().toISOString(),
+            simulated: true,
+            message: `[PREVIEW SIMULATION] Winner: ${selectedItem.title} (Zero database records written)`,
+          },
+          200,
+          corsConfig
+        );
       }
 
       const clientIp = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
@@ -468,6 +518,30 @@ export class RouletteHandler {
     env: Env
   ): Promise<{ allowed: boolean; identifier: string; error?: string; status?: number }> {
     const url = new URL(request.url);
+
+    // Admin Preview Mode Bypass: If ?preview=true and valid admin token is supplied, authorize preview immediately
+    if (url.searchParams.get('preview') === 'true') {
+      const authHeader = request.headers.get('Authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const googleToken = authHeader.substring(7).trim();
+        const googleClient = new GoogleClient();
+        const verifyResult = await googleClient.verifyToken(googleToken);
+
+        if (verifyResult.valid && verifyResult.email) {
+          const userEmail = verifyResult.email.toLowerCase().trim();
+          const supabase = getSupabaseClient(env);
+          const rbacRepo = new RbacRepository(supabase);
+          const userAccess = await rbacRepo.getUserAccess(userEmail);
+
+          if (userAccess.isOwner || userAccess.roles.length > 0 || userAccess.permissions.length > 0) {
+            return {
+              allowed: true,
+              identifier: `${userEmail} (Admin Preview Simulation)`,
+            };
+          }
+        }
+      }
+    }
 
     if (roulette.protection_type === 'token') {
       const tokenHeader = request.headers.get('X-Access-Token');

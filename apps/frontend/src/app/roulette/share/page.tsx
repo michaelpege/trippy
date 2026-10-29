@@ -67,6 +67,8 @@ function SharedRouletteContent() {
     process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
     '500705610156-2j6108eea4i6242mtf5reb0uoj6jrvqq.apps.googleusercontent.com';
 
+  const isPreview = searchParams.get('preview') === 'true';
+
   const loadRoulette = async (tokenOverride?: string, googleTokenOverride?: string) => {
     if (!rouletteId) {
       setAuthError('Missing roulette ID in URL parameter.');
@@ -79,23 +81,26 @@ function SharedRouletteContent() {
       const res = await fetchSharedRoulette(rouletteId, {
         token: tokenOverride || passcode || undefined,
         googleToken: stored || undefined,
+        preview: isPreview,
       });
 
       setRoulette(res.roulette);
       setLast5Runs(res.last5Runs || []);
-      setAuthenticatedAs(res.authenticatedAs);
+      setAuthenticatedAs(res.authenticatedAs || (isPreview ? 'Admin Preview (Simulation)' : null));
       setProtectionType(res.protectionType || res.roulette.protection_type || 'google');
       setAuthError(null);
 
-      // If user is not authenticated, automatically open the sign-in modal
-      if (res.requiresAuth || !res.authenticatedAs) {
+      // If user is not authenticated and not in preview mode, automatically open the sign-in modal
+      if (!isPreview && (res.requiresAuth || !res.authenticatedAs)) {
         setShowAuthModal(true);
       } else {
         setShowAuthModal(false);
       }
     } catch (err: any) {
       setAuthError(err.message || 'Access restricted');
-      setShowAuthModal(true);
+      if (!isPreview) {
+        setShowAuthModal(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -156,8 +161,8 @@ function SharedRouletteContent() {
   const handleSharedSpin = async (): Promise<RouletteItem> => {
     if (!rouletteId) throw new Error('Missing roulette ID');
 
-    // If not authenticated, prompt the sign-in modal
-    if (!authenticatedAs) {
+    // If not authenticated and not in preview mode, prompt the sign-in modal
+    if (!authenticatedAs && !isPreview) {
       setShowAuthModal(true);
       toast.error('Authentication required before spinning.');
       throw new Error('Authentication required');
@@ -166,16 +171,18 @@ function SharedRouletteContent() {
     const res = await spinSharedRoulette(rouletteId, {
       token: passcode || undefined,
       googleToken: getStoredToken() || undefined,
+      preview: isPreview,
     });
 
-    toast.success(`Winner: ${res.winner.title}! Result saved in audit trail.`);
-
-    // Prepend newly generated run to the audit trail
-    if (res.auditLog) {
-      setLast5Runs((prev) => [res.auditLog!, ...prev.slice(0, 4)]);
+    if (isPreview || res.simulated) {
+      toast.success(`[PREVIEW SIMULATION] Selected: ${res.winner.title}! Zero database records written.`);
     } else {
-      // Re-fetch the updated runs
-      loadRoulette();
+      toast.success(`Winner: ${res.winner.title}! Result saved in audit trail.`);
+      if (res.auditLog) {
+        setLast5Runs((prev) => [res.auditLog!, ...prev.slice(0, 4)]);
+      } else {
+        loadRoulette();
+      }
     }
 
     return res.winner;
@@ -214,6 +221,48 @@ function SharedRouletteContent() {
 
   return (
     <div className="max-w-2xl mx-auto my-4 space-y-6">
+      {/* Top Preview Mode Simulation Bar */}
+      {isPreview && (
+        <div className="bg-[#111111] text-white border-[3px] border-[#F5C800] p-4 shadow-[4px_4px_0px_0px_#F5C800]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <span className="w-3 h-3 bg-[#F5C800] animate-ping rounded-full flex-shrink-0" />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-black text-[#F5C800] uppercase tracking-widest">
+                    [ADMIN PREVIEW // RECIPIENT SIMULATION]
+                  </span>
+                  <span className="px-1.5 py-0.2 bg-[#E63329] text-white text-[9px] font-mono font-bold uppercase">
+                    ZERO DB WRITES
+                  </span>
+                </div>
+                <p className="text-xs text-[#888888] font-mono pt-0.5">
+                  Viewing exact recipient POV. Spins/picks are simulated and will NOT write to database or audit logs.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
+              {(!roulette.rendering_modes || roulette.rendering_modes.includes('cards')) && (
+                <Link
+                  href={`/peek-a-boo/share?id=${roulette.id}&preview=true`}
+                  className="px-3 py-1.5 bg-[#F5C800] hover:bg-white text-[#111111] text-[10px] font-black uppercase tracking-wider transition flex items-center gap-1 border border-[#111111]"
+                >
+                  <Sparkles className="w-3 h-3 text-[#111111]" />
+                  <span>SWITCH TO CARDS PREVIEW</span>
+                </Link>
+              )}
+              <Link
+                href={`/roulette/detail?id=${roulette.id}`}
+                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-[10px] font-mono font-bold uppercase tracking-wider transition border border-white/30"
+              >
+                EXIT PREVIEW
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Roulette Header */}
       <div className="text-center space-y-2">
         <div className="flex flex-wrap items-center justify-center gap-2">
@@ -241,7 +290,7 @@ function SharedRouletteContent() {
           {/* Switch to Peek a Boo Cards if enabled */}
           {(!roulette.rendering_modes || roulette.rendering_modes.includes('cards')) && (
             <Link
-              href={`/peek-a-boo/share?id=${roulette.id}`}
+              href={`/peek-a-boo/share?id=${roulette.id}${isPreview ? '&preview=true' : ''}`}
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-[10px] font-mono font-black uppercase tracking-wider bg-[#111111] text-[#F5C800] border-2 border-[#111111] hover:bg-[#1A3A6B] hover:text-white transition"
               title="Switch presentation format to Peek a Boo cards"
             >

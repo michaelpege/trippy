@@ -6,7 +6,7 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
-import type { Roulette, RouletteItem, RouletteAuditLog } from '../types';
+import type { Roulette, RouletteItem, RouletteAuditLog, TripPlaceDetail } from '../types';
 
 const DEFAULT_MODES: ('wheel' | 'cards')[] = ['wheel', 'cards'];
 
@@ -39,6 +39,111 @@ export class RouletteRepository {
   constructor(private supabase: SupabaseClient) {}
 
   /**
+   * Enriches roulette items with place/trip descriptions, addresses, gmaps URLs,
+   * and ordered trip places list for recipient display and place-level CTAs.
+   */
+  async enrichRouletteItems(items: RouletteItem[]): Promise<RouletteItem[]> {
+    if (!items || items.length === 0) return [];
+
+    const placeItemIds = items.filter((it) => it.type === 'places').map((it) => it.item_id);
+    const tripItemIds = items.filter((it) => it.type === 'trips').map((it) => it.item_id);
+
+    const placeDetailsMap = new Map<string, { description?: string; address?: string; gmaps_url?: string; type?: string }>();
+    const tripDetailsMap = new Map<string, { description?: string; places: TripPlaceDetail[] }>();
+
+    // 1. Fetch place details if any place items exist
+    if (placeItemIds.length > 0) {
+      try {
+        const { data: places, error: placeError } = await this.supabase
+          .from('trippy_places')
+          .select('id, name, type, address, gmaps_url, description')
+          .in('id', placeItemIds);
+
+        if (!placeError && places) {
+          for (const p of places) {
+            placeDetailsMap.set(p.id, {
+              description: p.description || '',
+              address: p.address || '',
+              gmaps_url: p.gmaps_url || '',
+              type: p.type || '',
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Enrich place items warning:', err);
+      }
+    }
+
+    // 2. Fetch trip details and ordered trip places if any trip items exist
+    if (tripItemIds.length > 0) {
+      try {
+        const { data: trips, error: tripsError } = await this.supabase
+          .from('trippy_trips')
+          .select('id, name, description')
+          .in('id', tripItemIds);
+
+        if (!tripsError && trips) {
+          for (const t of trips) {
+            tripDetailsMap.set(t.id, {
+              description: t.description || '',
+              places: [],
+            });
+          }
+        }
+
+        const { data: tripPlaces, error: tripPlacesError } = await this.supabase
+          .from('trippy_trip_places')
+          .select('id, trip_id, place_id, order_index, visit_time, notes, trippy_places(id, name, type, address, gmaps_url, description)')
+          .in('trip_id', tripItemIds)
+          .order('order_index', { ascending: true });
+
+        if (!tripPlacesError && tripPlaces) {
+          for (const tp of tripPlaces as any[]) {
+            if (!tripDetailsMap.has(tp.trip_id)) {
+              tripDetailsMap.set(tp.trip_id, { places: [] });
+            }
+            const p = Array.isArray(tp.trippy_places) ? tp.trippy_places[0] : tp.trippy_places;
+            tripDetailsMap.get(tp.trip_id)!.places.push({
+              id: tp.id,
+              place_id: tp.place_id,
+              name: p?.name || 'Destination Stop',
+              type: p?.type,
+              address: p?.address,
+              gmaps_url: p?.gmaps_url,
+              visit_time: tp.visit_time,
+              notes: tp.notes,
+              description: p?.description,
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Enrich trip items warning:', err);
+      }
+    }
+
+    // 3. Return enriched items
+    return items.map((item) => {
+      if (item.type === 'places') {
+        const p = placeDetailsMap.get(item.item_id);
+        return {
+          ...item,
+          description: item.description || p?.description,
+          address: item.address || p?.address,
+          gmaps_url: item.gmaps_url || p?.gmaps_url,
+        };
+      } else if (item.type === 'trips') {
+        const t = tripDetailsMap.get(item.item_id);
+        return {
+          ...item,
+          description: item.description || t?.description,
+          trip_places: t?.places || [],
+        };
+      }
+      return item;
+    });
+  }
+
+  /**
    * List all roulette configurations
    */
   async listRoulettes(): Promise<Roulette[]> {
@@ -58,7 +163,7 @@ export class RouletteRepository {
   }
 
   /**
-   * Get single roulette by ID
+   * Get single roulette by ID (enriched with place/trip details)
    */
   async getRouletteById(id: string): Promise<Roulette | null> {
     const { data, error } = await this.supabase
@@ -68,10 +173,14 @@ export class RouletteRepository {
       .maybeSingle();
 
     if (error || !data) return null;
+
+    const rawItems = Array.isArray(data.items) ? data.items : [];
+    const enrichedItems = await this.enrichRouletteItems(rawItems);
+
     return {
       ...data,
       description: cleanDescription(data.description),
-      items: Array.isArray(data.items) ? data.items : [],
+      items: enrichedItems,
       allowed_emails: Array.isArray(data.allowed_emails) ? data.allowed_emails : [],
       rendering_modes: parseRenderingModes(data.rendering_modes, data.description),
     } as Roulette;
