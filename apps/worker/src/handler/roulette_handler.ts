@@ -63,6 +63,7 @@ export class RouletteHandler {
         protection_type?: 'google' | 'token';
         allowed_emails?: string[];
         access_token?: string;
+        rendering_modes?: ('wheel' | 'cards')[];
       };
 
       if (!body || !body.title || !body.type || !body.protection_type) {
@@ -96,6 +97,7 @@ export class RouletteHandler {
           protection_type: body.protection_type,
           allowed_emails: body.allowed_emails || [],
           access_token: body.access_token?.trim() || '',
+          rendering_modes: body.rendering_modes,
         },
         user.email
       );
@@ -126,6 +128,7 @@ export class RouletteHandler {
         protection_type?: 'google' | 'token';
         allowed_emails?: string[];
         access_token?: string;
+        rendering_modes?: ('wheel' | 'cards')[];
         is_active?: boolean;
       };
 
@@ -172,6 +175,7 @@ export class RouletteHandler {
         protection_type: body.protection_type,
         allowed_emails: targetAllowedEmails,
         access_token: targetAccessToken,
+        rendering_modes: body.rendering_modes,
         is_active: body.is_active,
       });
 
@@ -387,6 +391,7 @@ export class RouletteHandler {
             type: roulette.type,
             items: roulette.items,
             protection_type: roulette.protection_type,
+            rendering_modes: roulette.rendering_modes || ['wheel', 'cards'],
             updated_at: roulette.updated_at || roulette.created_at,
             created_at: roulette.created_at,
           },

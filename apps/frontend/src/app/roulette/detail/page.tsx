@@ -52,6 +52,7 @@ function RouletteDetailContent() {
   // Editable Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [renderingModes, setRenderingModes] = useState<('wheel' | 'cards')[]>(['wheel', 'cards']);
   const [isActive, setIsActive] = useState(true);
   const [protectionType, setProtectionType] = useState<'google' | 'token'>('google');
   const [allowedEmails, setAllowedEmails] = useState<string[]>([]);
@@ -91,6 +92,7 @@ function RouletteDetailContent() {
 
       setTitle(r.title);
       setDescription(r.description || '');
+      setRenderingModes(r.rendering_modes || ['wheel', 'cards']);
       setIsActive(r.is_active);
       setProtectionType(r.protection_type);
       setAllowedEmails(r.allowed_emails || []);
@@ -111,6 +113,33 @@ function RouletteDetailContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleRenderingMode = (mode: 'wheel' | 'cards') => {
+    if (renderingModes.includes(mode)) {
+      if (renderingModes.length === 1) {
+        toast.info('At least one presentation format must remain selected.');
+        return;
+      }
+      setRenderingModes(renderingModes.filter((m) => m !== mode));
+    } else {
+      setRenderingModes([...renderingModes, mode]);
+    }
+  };
+
+  const handleUpdateQuotes = (itemId: string, rawText: string) => {
+    const lines = rawText.split('\n').map((l) => l.trim()).filter(Boolean);
+    setItems((prev) =>
+      prev.map((it) =>
+        it.item_id === itemId
+          ? {
+              ...it,
+              quotes: lines,
+              quote: lines[0] || '',
+            }
+          : it
+      )
+    );
   };
 
   const loadAuditLogs = async () => {
@@ -137,10 +166,14 @@ function RouletteDetailContent() {
       JSON.stringify(allowedEmails.slice().sort()) ===
       JSON.stringify((originalRoulette.allowed_emails || []).slice().sort());
     const itemsMatch = JSON.stringify(items) === JSON.stringify(originalRoulette.items || []);
+    const modesMatch =
+      JSON.stringify(renderingModes.slice().sort()) ===
+      JSON.stringify((originalRoulette.rendering_modes || ['wheel', 'cards']).slice().sort());
 
     return (
       title !== originalRoulette.title ||
       description !== (originalRoulette.description || '') ||
+      !modesMatch ||
       isActive !== originalRoulette.is_active ||
       protectionType !== originalRoulette.protection_type ||
       !emailsMatch ||
@@ -151,6 +184,7 @@ function RouletteDetailContent() {
     originalRoulette,
     title,
     description,
+    renderingModes,
     isActive,
     protectionType,
     allowedEmails,
@@ -283,6 +317,7 @@ function RouletteDetailContent() {
       const res = await updateRoulette(rouletteId, {
         title: title.trim(),
         description: description.trim(),
+        rendering_modes: renderingModes,
         is_active: isActive,
         protection_type: protectionType,
         allowed_emails: allowedEmails,
@@ -381,6 +416,24 @@ function RouletteDetailContent() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <Link
+            href={`/roulette?id=${rouletteId}`}
+            className="px-3.5 py-2 border-2 border-[#111111] dark:border-white bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-black uppercase tracking-wider hover:bg-[#E63329] hover:text-white transition flex items-center gap-1.5"
+            title="Spin on Roulette Wheel"
+          >
+            <Disc className="w-3.5 h-3.5 text-[#E63329]" />
+            <span>PLAY WHEEL</span>
+          </Link>
+
+          <Link
+            href={`/peek-a-boo?id=${rouletteId}`}
+            className="px-3.5 py-2 border-2 border-[#111111] dark:border-white bg-[#111111] text-white dark:bg-white dark:text-[#111111] text-xs font-black uppercase tracking-wider hover:bg-[#1A3A6B] hover:text-white transition flex items-center gap-1.5"
+            title="Play in Peek a Boo Cards Format"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#F5C800]" />
+            <span>PLAY PEEK A BOO</span>
+          </Link>
+
           <button
             onClick={() => setShowShareModal(true)}
             className="px-4 py-2 border-2 border-[#111111] dark:border-white bg-white dark:bg-[#16191E] text-xs font-black uppercase tracking-wider text-[#111111] dark:text-white hover:bg-[#F5C800] hover:text-[#111111] transition flex items-center gap-1.5"
@@ -476,6 +529,42 @@ function RouletteDetailContent() {
                   placeholder="Instructions for companions spinning this wheel..."
                   className="w-full px-3 py-2 border-2 border-[#111111] dark:border-white text-xs font-medium bg-transparent text-[#111111] dark:text-white focus:outline-none focus:border-[#E63329]"
                 />
+              </div>
+
+              {/* Presentation Formats Chips */}
+              <div>
+                <label className="block text-[10px] font-mono font-black uppercase tracking-wider text-[#888888] mb-1.5">
+                  Presentation Formats <span className="text-[#E63329]">*</span>
+                </label>
+                <div className="flex flex-wrap gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleRenderingMode('wheel')}
+                    className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider border-2 transition-all flex items-center gap-2 ${
+                      renderingModes.includes('wheel')
+                        ? 'bg-[#111111] text-[#F5C800] dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-[2px_2px_0px_0px_#E63329]'
+                        : 'bg-white dark:bg-[#111111] text-[#888888] border-[#888888]/40 hover:border-[#111111]'
+                    }`}
+                  >
+                    <Disc className="w-3.5 h-3.5" />
+                    <span>Roulette Wheel</span>
+                    {renderingModes.includes('wheel') && <span className="text-[10px] font-mono">✓</span>}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleRenderingMode('cards')}
+                    className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider border-2 transition-all flex items-center gap-2 ${
+                      renderingModes.includes('cards')
+                        ? 'bg-[#111111] text-[#F5C800] dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-[2px_2px_0px_0px_#1A3A6B]'
+                        : 'bg-white dark:bg-[#111111] text-[#888888] border-[#888888]/40 hover:border-[#111111]'
+                    }`}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Peek a Boo Cards</span>
+                    {renderingModes.includes('cards') && <span className="text-[10px] font-mono">✓</span>}
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-1">
@@ -807,6 +896,31 @@ function RouletteDetailContent() {
                             style={{ width: `${Math.min(100, Math.max(2, Number(pct)))}%` }}
                           />
                         </div>
+                      </div>
+
+                      {/* Card Clues / Quotes (Plural with random pick on shuffle) */}
+                      <div className="pt-2 border-t border-dashed border-[#111111]/20 dark:border-white/20 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono uppercase font-black text-[#888888]">
+                            Card Clues / Quotes (one per line, picked randomly on shuffle):
+                          </span>
+                          {it.quotes && it.quotes.length > 1 && (
+                            <span className="text-[9px] font-mono font-bold text-[#E63329]">
+                              {it.quotes.length} quotes configured
+                            </span>
+                          )}
+                        </div>
+                        <textarea
+                          rows={2}
+                          placeholder={'e.g.\nSmoky woodfired Margherita pizza\nCosy candlelit hidden garden\nCrispy truffle parmesan fries'}
+                          value={
+                            it.quotes && it.quotes.length > 0
+                              ? it.quotes.join('\n')
+                              : (it.quote || '')
+                          }
+                          onChange={(e) => handleUpdateQuotes(it.item_id, e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-xs border border-[#111111] dark:border-white bg-white dark:bg-[#16191E] text-[#111111] dark:text-white font-mono focus:outline-none focus:border-[#E63329] leading-relaxed"
+                        />
                       </div>
                     </div>
                   );

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Copy, Check, Share2, Shield, Lock, Mail } from 'lucide-react';
+import { X, Copy, Check, Share2, Shield, Lock, Mail, Disc, Sparkles } from 'lucide-react';
 import { useToast } from '../common/Toast';
 import type { Roulette } from '@/types';
 
@@ -17,18 +17,31 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
   onClose,
 }) => {
   const toast = useToast();
-  const [copied, setCopied] = useState(false);
+  const [copiedWheel, setCopiedWheel] = useState(false);
+  const [copiedCards, setCopiedCards] = useState(false);
 
   if (!isOpen || !roulette) return null;
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const shareUrl = `${origin}/roulette/share/?id=${roulette.id}`;
+  const wheelShareUrl = `${origin}/roulette/share?id=${roulette.id}`;
+  const cardsShareUrl = `${origin}/peek-a-boo/share?id=${roulette.id}`;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    toast.success('Shareable link copied to clipboard!');
-    setTimeout(() => setCopied(false), 2500);
+  const modes = roulette.rendering_modes && roulette.rendering_modes.length > 0
+    ? roulette.rendering_modes
+    : ['wheel', 'cards'];
+
+  const handleCopyWheel = () => {
+    navigator.clipboard.writeText(wheelShareUrl);
+    setCopiedWheel(true);
+    toast.success('Roulette wheel share link copied!');
+    setTimeout(() => setCopiedWheel(false), 2500);
+  };
+
+  const handleCopyCards = () => {
+    navigator.clipboard.writeText(cardsShareUrl);
+    setCopiedCards(true);
+    toast.success('Peek a Boo cards share link copied!');
+    setTimeout(() => setCopiedCards(false), 2500);
   };
 
   return (
@@ -45,7 +58,7 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
                 [ACCESS // DISPATCH]
               </span>
               <h3 className="text-base font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF]">
-                Protected Shareable Link
+                Protected Shareable Links
               </h3>
             </div>
           </div>
@@ -60,27 +73,57 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
 
         {/* Content */}
         <div className="p-6 space-y-5">
-          <div>
-            <label className="block text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] mb-1.5">
-              Unique Session URL
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                readOnly
-                value={shareUrl}
-                className="w-full px-3.5 py-2.5 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-mono font-bold bg-[#F7F5F0] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="px-4 py-2.5 bg-[#F5C800] hover:bg-[#111111] hover:text-[#F5C800] text-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-black uppercase tracking-wider rounded-none flex items-center gap-1.5 transition flex-shrink-0"
-              >
-                {copied ? <Check className="w-4 h-4 text-[#111111]" /> : <Copy className="w-4 h-4" />}
-                <span>{copied ? 'COPIED' : 'COPY'}</span>
-              </button>
+          {/* Wheel Link */}
+          {modes.includes('wheel') && (
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] mb-1.5 flex items-center gap-1.5">
+                <Disc className="w-3.5 h-3.5 text-[#E63329]" />
+                <span>Roulette Wheel URL</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={wheelShareUrl}
+                  className="w-full px-3.5 py-2 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-mono font-bold bg-[#F7F5F0] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleCopyWheel}
+                  className="px-4 py-2 bg-[#F5C800] hover:bg-[#111111] hover:text-[#F5C800] text-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-black uppercase tracking-wider rounded-none flex items-center gap-1.5 transition flex-shrink-0"
+                >
+                  {copiedWheel ? <Check className="w-4 h-4 text-[#111111]" /> : <Copy className="w-4 h-4" />}
+                  <span>{copiedWheel ? 'COPIED' : 'COPY'}</span>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Peek a Boo Link */}
+          {modes.includes('cards') && (
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] mb-1.5 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#F5C800]" />
+                <span>Peek a Boo Cards URL</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={cardsShareUrl}
+                  className="w-full px-3.5 py-2 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-mono font-bold bg-[#F7F5F0] dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleCopyCards}
+                  className="px-4 py-2 bg-[#1A3A6B] hover:bg-[#111111] text-white border-2 border-[#111111] dark:border-[#FFFFFF] text-xs font-black uppercase tracking-wider rounded-none flex items-center gap-1.5 transition flex-shrink-0"
+                >
+                  {copiedCards ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
+                  <span>{copiedCards ? 'COPIED' : 'COPY'}</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Protection Details */}
           <div className="p-4 bg-[#F7F5F0] dark:bg-[#111111] border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none space-y-2.5">
@@ -103,7 +146,7 @@ export const ShareLinkModal: React.FC<ShareLinkModalProps> = ({
                   Restricted to Authorized Google GIS Accounts
                 </p>
                 <p className="text-[11px] text-[#888888] font-mono leading-relaxed">
-                  Only the owner and the following whitelisted Gmail addresses can decrypt candidates and spin:
+                  Only the owner and the following whitelisted Gmail addresses can decrypt candidates and play:
                 </p>
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {roulette.allowed_emails.map((e) => (

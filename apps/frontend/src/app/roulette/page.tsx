@@ -248,6 +248,17 @@ function RouletteView() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
+                      {(!activeRoulette.rendering_modes || activeRoulette.rendering_modes.includes('cards')) && (
+                        <Link
+                          href={`/peek-a-boo?id=${activeRoulette.id}`}
+                          className="px-3 py-1.5 bg-[#111111] text-[#F5C800] hover:bg-[#1A3A6B] hover:text-white border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider transition-colors flex items-center gap-1.5"
+                          title="Play this set in Peek a Boo cards format"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-[#F5C800]" />
+                          <span>PEEK A BOO</span>
+                        </Link>
+                      )}
+
                       <Link
                         href={`/roulette/detail/?id=${activeRoulette.id}`}
                         className="px-3 py-1.5 bg-[#F5C800] text-[#111111] hover:bg-[#111111] hover:text-[#F5C800] border-2 border-[#111111] dark:border-white text-xs font-black uppercase tracking-wider transition-colors flex items-center gap-1.5"

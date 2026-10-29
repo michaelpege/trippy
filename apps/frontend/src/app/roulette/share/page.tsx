@@ -13,7 +13,9 @@ import {
   X,
   LogIn,
   CheckCircle2,
+  Sparkles,
 } from 'lucide-react';
+import Link from 'next/link';
 import { RouletteWheel } from '@/components/roulette/RouletteWheel';
 import { fetchSharedRoulette, spinSharedRoulette } from '@/lib/api';
 import { getStoredToken, loadGoogleScript, saveSession } from '@/lib/auth';
@@ -46,7 +48,7 @@ function SharedRouletteContent() {
   const [loading, setLoading] = useState(true);
   const [roulette, setRoulette] = useState<Pick<
     Roulette,
-    'id' | 'title' | 'description' | 'type' | 'items' | 'protection_type' | 'updated_at' | 'created_at'
+    'id' | 'title' | 'description' | 'type' | 'items' | 'protection_type' | 'rendering_modes' | 'updated_at' | 'created_at'
   > | null>(null);
   const [last5Runs, setLast5Runs] = useState<RouletteAuditLog[]>([]);
   const [authenticatedAs, setAuthenticatedAs] = useState<string | null>(null);
@@ -235,6 +237,18 @@ function SharedRouletteContent() {
             <Clock className="w-3.5 h-3.5 text-[#1A3A6B] dark:text-[#F5C800]" />
             <span>Updated: {lastUpdatedFormatted}</span>
           </div>
+
+          {/* Switch to Peek a Boo Cards if enabled */}
+          {(!roulette.rendering_modes || roulette.rendering_modes.includes('cards')) && (
+            <Link
+              href={`/peek-a-boo/share?id=${roulette.id}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none text-[10px] font-mono font-black uppercase tracking-wider bg-[#111111] text-[#F5C800] border-2 border-[#111111] hover:bg-[#1A3A6B] hover:text-white transition"
+              title="Switch presentation format to Peek a Boo cards"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>PEEK A BOO CARDS</span>
+            </Link>
+          )}
         </div>
 
         <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-[#111111] dark:text-white pt-1">

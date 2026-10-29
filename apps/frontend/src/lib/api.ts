@@ -231,6 +231,7 @@ export async function createRoulette(data: {
   protection_type: 'google' | 'token';
   allowed_emails?: string[];
   access_token?: string;
+  rendering_modes?: ('wheel' | 'cards')[];
 }): Promise<{ roulette: Roulette }> {
   return apiFetch('/api/roulettes', {
     method: 'POST',
@@ -274,7 +275,7 @@ export async function fetchSharedRoulette(
 ): Promise<{
   roulette: Pick<
     Roulette,
-    'id' | 'title' | 'description' | 'type' | 'items' | 'protection_type' | 'updated_at' | 'created_at'
+    'id' | 'title' | 'description' | 'type' | 'items' | 'protection_type' | 'rendering_modes' | 'updated_at' | 'created_at'
   >;
   last5Runs: RouletteAuditLog[];
   authenticatedAs: string | null;

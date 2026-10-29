@@ -7,6 +7,7 @@ import {
   MapPin,
   Route,
   Disc,
+  Sparkles,
   Settings,
   LogOut,
   LogIn,
@@ -36,11 +37,12 @@ export const Navbar: React.FC = () => {
     { href: '/places', label: 'Places', icon: MapPin },
     { href: '/trips', label: 'Trips', icon: Route },
     { href: '/roulette', label: 'Roulette', icon: Disc },
+    { href: '/peek-a-boo', label: 'Peek a Boo', icon: Sparkles },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
 
-  // The shared roulette route should only show the roulette and sign-in popup (no navbar)
-  if (pathname.startsWith('/roulette/share')) {
+  // The shared roulette and peek-a-boo routes should only show the game and sign-in popup (no navbar)
+  if (pathname.startsWith('/roulette/share') || pathname.startsWith('/peek-a-boo/share')) {
     return null;
   }
 

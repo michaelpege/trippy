@@ -76,6 +76,8 @@ export interface RouletteItem {
   subtitle?: string;
   type: 'trips' | 'places';
   weight: number;
+  quote?: string;
+  quotes?: string[];
 }
 
 export interface Roulette {
@@ -87,6 +89,7 @@ export interface Roulette {
   protection_type: 'google' | 'token';
   allowed_emails: string[];
   access_token?: string;
+  rendering_modes?: ('wheel' | 'cards')[];
   is_active: boolean;
   created_by?: string;
   created_at?: string;

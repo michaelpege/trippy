@@ -8,6 +8,33 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import type { Roulette, RouletteItem, RouletteAuditLog } from '../types';
 
+const DEFAULT_MODES: ('wheel' | 'cards')[] = ['wheel', 'cards'];
+
+function parseRenderingModes(raw: any, description?: string): ('wheel' | 'cards')[] {
+  if (Array.isArray(raw) && raw.length > 0) {
+    return raw.filter((m: any) => m === 'wheel' || m === 'cards');
+  }
+  if (description) {
+    const match = description.match(/<!--modes:([a-z,]+)-->/);
+    if (match) {
+      const parsed = match[1].split(',').filter((m: string) => m === 'wheel' || m === 'cards');
+      if (parsed.length > 0) return parsed as ('wheel' | 'cards')[];
+    }
+  }
+  return DEFAULT_MODES;
+}
+
+function embedRenderingModesInDescription(description: string = '', modes?: ('wheel' | 'cards')[]): string {
+  const cleanDesc = description.replace(/<!--modes:[a-z,]+-->/g, '').trim();
+  if (!modes || modes.length === 0) return cleanDesc;
+  return cleanDesc ? `${cleanDesc}\n<!--modes:${modes.join(',')}-->` : `<!--modes:${modes.join(',')}-->`;
+}
+
+function cleanDescription(description?: string): string {
+  if (!description) return '';
+  return description.replace(/<!--modes:[a-z,]+-->/g, '').trim();
+}
+
 export class RouletteRepository {
   constructor(private supabase: SupabaseClient) {}
 
@@ -23,8 +50,10 @@ export class RouletteRepository {
     if (error) throw error;
     return (data || []).map((r) => ({
       ...r,
+      description: cleanDescription(r.description),
       items: Array.isArray(r.items) ? r.items : [],
       allowed_emails: Array.isArray(r.allowed_emails) ? r.allowed_emails : [],
+      rendering_modes: parseRenderingModes(r.rendering_modes, r.description),
     })) as Roulette[];
   }
 
@@ -41,8 +70,10 @@ export class RouletteRepository {
     if (error || !data) return null;
     return {
       ...data,
+      description: cleanDescription(data.description),
       items: Array.isArray(data.items) ? data.items : [],
       allowed_emails: Array.isArray(data.allowed_emails) ? data.allowed_emails : [],
+      rendering_modes: parseRenderingModes(data.rendering_modes, data.description),
     } as Roulette;
   }
 
@@ -58,17 +89,20 @@ export class RouletteRepository {
       protection_type: 'google' | 'token';
       allowed_emails?: string[];
       access_token?: string;
+      rendering_modes?: ('wheel' | 'cards')[];
     },
     createdBy: string
   ): Promise<Roulette> {
     const rouletteId = `rou_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 7)}`;
+    const modes = data.rendering_modes && data.rendering_modes.length > 0 ? data.rendering_modes : DEFAULT_MODES;
+    const finalDescription = embedRenderingModesInDescription(data.description, modes);
 
     const { data: created, error } = await this.supabase
       .from('trippy_roulettes')
       .insert({
         id: rouletteId,
         title: data.title,
-        description: data.description || '',
+        description: finalDescription,
         type: data.type,
         items: data.items || [],
         protection_type: data.protection_type,
@@ -81,7 +115,11 @@ export class RouletteRepository {
       .single();
 
     if (error) throw error;
-    return created as Roulette;
+    return {
+      ...created,
+      description: cleanDescription(created.description),
+      rendering_modes: parseRenderingModes(created.rendering_modes, created.description),
+    } as Roulette;
   }
 
   /**
@@ -97,12 +135,13 @@ export class RouletteRepository {
       protection_type?: 'google' | 'token';
       allowed_emails?: string[];
       access_token?: string;
+      rendering_modes?: ('wheel' | 'cards')[];
       is_active?: boolean;
     }
   ): Promise<Roulette> {
+    const existing = await this.getRouletteById(id);
     const updates: Record<string, unknown> = {};
     if (data.title !== undefined) updates.title = data.title;
-    if (data.description !== undefined) updates.description = data.description;
     if (data.type !== undefined) updates.type = data.type;
     if (data.items !== undefined) updates.items = data.items;
     if (data.protection_type !== undefined) updates.protection_type = data.protection_type;
@@ -112,6 +151,12 @@ export class RouletteRepository {
     if (data.access_token !== undefined) updates.access_token = data.access_token;
     if (data.is_active !== undefined) updates.is_active = data.is_active;
 
+    if (data.description !== undefined || data.rendering_modes !== undefined) {
+      const baseDesc = data.description !== undefined ? data.description : (existing?.description || '');
+      const modes = data.rendering_modes !== undefined ? data.rendering_modes : (existing?.rendering_modes || DEFAULT_MODES);
+      updates.description = embedRenderingModesInDescription(baseDesc, modes);
+    }
+
     const { data: updated, error } = await this.supabase
       .from('trippy_roulettes')
       .update(updates)
@@ -120,7 +165,11 @@ export class RouletteRepository {
       .single();
 
     if (error) throw error;
-    return updated as Roulette;
+    return {
+      ...updated,
+      description: cleanDescription(updated.description),
+      rendering_modes: parseRenderingModes(updated.rendering_modes, updated.description),
+    } as Roulette;
   }
 
   /**

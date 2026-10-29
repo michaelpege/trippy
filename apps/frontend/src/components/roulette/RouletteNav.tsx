@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Disc, Sliders, History, Sparkles } from 'lucide-react';
 
 interface RouletteNavProps {
-  activeTab: 'spinner' | 'manage' | 'audit' | 'detail';
+  activeTab: 'spinner' | 'peek-a-boo' | 'manage' | 'audit' | 'detail';
   rightElement?: React.ReactNode;
 }
 
@@ -23,6 +23,18 @@ export const RouletteNav: React.FC<RouletteNavProps> = ({ activeTab, rightElemen
         >
           <Disc className={`w-3.5 h-3.5 ${activeTab === 'spinner' ? 'text-[#E63329]' : ''}`} />
           <span>SPINNER WHEEL</span>
+        </Link>
+
+        <Link
+          href="/peek-a-boo"
+          className={`px-4 py-2 text-xs font-black uppercase tracking-wider border-2 transition-all flex items-center gap-2 ${
+            activeTab === 'peek-a-boo'
+              ? 'bg-[#111111] text-white dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-[2px_2px_0px_0px_#E63329]'
+              : 'bg-white dark:bg-[#16191E] text-[#111111] dark:text-white border-[#111111] dark:border-white hover:bg-[#F5C800] hover:text-[#111111]'
+          }`}
+        >
+          <Sparkles className={`w-3.5 h-3.5 ${activeTab === 'peek-a-boo' ? 'text-[#F5C800]' : ''}`} />
+          <span>PEEK A BOO</span>
         </Link>
 
         <Link

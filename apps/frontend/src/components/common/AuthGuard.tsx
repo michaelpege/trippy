@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
  * - /setup: Genesis bootstrap setup (when database is empty)
  * - /roulette/share: Shared roulette link (protected by its own popup / password)
  */
-const PUBLIC_PREFIXES = ['/login', '/setup', '/roulette/share'];
+const PUBLIC_PREFIXES = ['/login', '/setup', '/roulette/share', '/peek-a-boo/share'];
 
 export const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();

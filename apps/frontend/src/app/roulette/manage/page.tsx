@@ -425,7 +425,18 @@ export default function RouletteManagementPage() {
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    {(!roulette.rendering_modes || roulette.rendering_modes.includes('cards')) && (
+                      <Link
+                        href={`/peek-a-boo?id=${roulette.id}`}
+                        className="px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider border border-[#111111] dark:border-white bg-[#111111] text-[#F5C800] hover:bg-[#1A3A6B] hover:text-white transition flex items-center gap-1"
+                        title="Play in Peek a Boo cards format"
+                      >
+                        <Sparkles className="w-3 h-3 text-[#F5C800]" />
+                        <span>CARDS</span>
+                      </Link>
+                    )}
+
                     <Link
                       href={`/roulette?id=${roulette.id}`}
                       className="px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider border border-[#111111] dark:border-white bg-white dark:bg-[#16191E] text-[#111111] dark:text-white hover:bg-[#E63329] hover:text-white transition flex items-center gap-1"

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Shield, Lock, Mail, Disc } from 'lucide-react';
+import { X, Plus, Trash2, Shield, Lock, Mail, Disc, Sparkles } from 'lucide-react';
 import { ConfirmModal } from '../common/ConfirmModal';
 import { fetchPlaces, fetchTrips } from '@/lib/api';
 import { useToast } from '../common/Toast';
@@ -19,6 +19,7 @@ interface RouletteFormModalProps {
     protection_type: 'google' | 'token';
     allowed_emails?: string[];
     access_token?: string;
+    rendering_modes?: ('wheel' | 'cards')[];
   }) => Promise<void>;
 }
 
@@ -33,6 +34,9 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
 
   const [title, setTitle] = useState(rouletteToEdit?.title || '');
   const [description, setDescription] = useState(rouletteToEdit?.description || '');
+  const [renderingModes, setRenderingModes] = useState<('wheel' | 'cards')[]>(
+    rouletteToEdit?.rendering_modes || ['wheel', 'cards']
+  );
   const [type, setType] = useState<'trips' | 'places'>(rouletteToEdit?.type || 'places');
   const [protectionType, setProtectionType] = useState<'google' | 'token'>(
     rouletteToEdit?.protection_type || 'google'
@@ -63,6 +67,7 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
     if (rouletteToEdit) {
       setTitle(rouletteToEdit.title || '');
       setDescription(rouletteToEdit.description || '');
+      setRenderingModes(rouletteToEdit.rendering_modes || ['wheel', 'cards']);
       setType(rouletteToEdit.type || 'places');
       setProtectionType(rouletteToEdit.protection_type || 'google');
       setAllowedEmailsStr((rouletteToEdit.allowed_emails || []).join(', '));
@@ -71,6 +76,7 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
     } else {
       setTitle('');
       setDescription('');
+      setRenderingModes(['wheel', 'cards']);
       setType('places');
       setProtectionType('google');
       setAllowedEmailsStr('');
@@ -80,6 +86,18 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
   }, [isOpen, rouletteToEdit]);
 
   if (!isOpen) return null;
+
+  const toggleRenderingMode = (mode: 'wheel' | 'cards') => {
+    if (renderingModes.includes(mode)) {
+      if (renderingModes.length === 1) {
+        toast.info('At least one presentation format must remain selected.');
+        return;
+      }
+      setRenderingModes(renderingModes.filter((m) => m !== mode));
+    } else {
+      setRenderingModes([...renderingModes, mode]);
+    }
+  };
 
   const isFormDirty = () => {
     if (!rouletteToEdit) {
@@ -95,6 +113,7 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
     return (
       title !== (rouletteToEdit.title || '') ||
       description !== (rouletteToEdit.description || '') ||
+      JSON.stringify(renderingModes.slice().sort()) !== JSON.stringify((rouletteToEdit.rendering_modes || ['wheel', 'cards']).slice().sort()) ||
       type !== rouletteToEdit.type ||
       protectionType !== rouletteToEdit.protection_type ||
       allowedEmailsStr !== initialEmails ||
@@ -169,10 +188,29 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
     );
   };
 
+  const handleUpdateQuotes = (itemId: string, rawText: string) => {
+    const lines = rawText.split('\n').map((l) => l.trim()).filter(Boolean);
+    setItems((prev) =>
+      prev.map((it) =>
+        it.item_id === itemId
+          ? {
+              ...it,
+              quotes: lines,
+              quote: lines[0] || '',
+            }
+          : it
+      )
+    );
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       toast.error('Roulette title is required.');
+      return;
+    }
+    if (renderingModes.length === 0) {
+      toast.error('Select at least one presentation format.');
       return;
     }
     if (items.length < 2) {
@@ -206,6 +244,7 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
         protection_type: protectionType,
         allowed_emails: emails,
         access_token: accessToken.trim(),
+        rendering_modes: renderingModes,
       });
       setShowConfirm(false);
       onClose();
@@ -272,6 +311,45 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
                 placeholder="Optional purpose or instructions for companions..."
                 className="w-full px-4 py-2 rounded-none border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] text-xs font-medium focus:outline-none focus:border-[#E63329] transition"
               />
+            </div>
+
+            {/* Display / Presentation Formats */}
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-[#111111] dark:text-[#FFFFFF] mb-1">
+                Presentation Formats <span className="text-[#E63329]">*</span>
+              </label>
+              <p className="text-[10px] font-mono text-[#888888] mb-2">
+                Enable Roulette Wheel, Peek a Boo Cards, or both for this pool:
+              </p>
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => toggleRenderingMode('wheel')}
+                  className={`px-3.5 py-2 text-xs font-black uppercase tracking-wider border-2 transition-all flex items-center gap-2 ${
+                    renderingModes.includes('wheel')
+                      ? 'bg-[#111111] text-[#F5C800] dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-[2px_2px_0px_0px_#E63329]'
+                      : 'bg-white dark:bg-[#111111] text-[#888888] border-[#888888]/40 hover:border-[#111111]'
+                  }`}
+                >
+                  <Disc className="w-3.5 h-3.5" />
+                  <span>Roulette Wheel</span>
+                  {renderingModes.includes('wheel') && <span className="text-[10px] font-mono">✓</span>}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => toggleRenderingMode('cards')}
+                  className={`px-3.5 py-2 text-xs font-black uppercase tracking-wider border-2 transition-all flex items-center gap-2 ${
+                    renderingModes.includes('cards')
+                      ? 'bg-[#111111] text-[#F5C800] dark:bg-white dark:text-[#111111] border-[#111111] dark:border-white shadow-[2px_2px_0px_0px_#1A3A6B]'
+                      : 'bg-white dark:bg-[#111111] text-[#888888] border-[#888888]/40 hover:border-[#111111]'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Peek a Boo Cards</span>
+                  {renderingModes.includes('cards') && <span className="text-[10px] font-mono">✓</span>}
+                </button>
+              </div>
             </div>
 
             {/* Mode: Trips or Places */}
@@ -378,47 +456,74 @@ export const RouletteFormModal: React.FC<RouletteFormModalProps> = ({
                   {items.map((item, idx) => (
                     <div
                       key={item.item_id}
-                      className="p-3 bg-white dark:bg-[#0E1013] border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none flex items-center justify-between gap-3"
+                      className="p-3 bg-white dark:bg-[#0E1013] border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none flex flex-col gap-2"
                     >
-                      <div className="flex items-center gap-2 truncate flex-1">
-                        <span className="font-mono text-[10px] font-black text-[#888888]">
-                          #{String(idx + 1).padStart(2, '0')}
-                        </span>
-                        <div className="truncate">
-                          <p className="text-xs font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF] truncate">
-                            {item.title}
-                          </p>
-                          {item.subtitle && (
-                            <p className="text-[10px] font-mono text-[#888888] truncate">
-                              {item.subtitle}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 truncate flex-1">
+                          <span className="font-mono text-[10px] font-black text-[#888888]">
+                            #{String(idx + 1).padStart(2, '0')}
+                          </span>
+                          <div className="truncate">
+                            <p className="text-xs font-black uppercase tracking-tight text-[#111111] dark:text-[#FFFFFF] truncate">
+                              {item.title}
                             </p>
-                          )}
+                            {item.subtitle && (
+                              <p className="text-[10px] font-mono text-[#888888] truncate">
+                                {item.subtitle}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Weight Selector */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-[10px] font-mono uppercase font-black text-[#888888]">
+                            Weight:
+                          </span>
+                          <input
+                            type="number"
+                            min={1}
+                            max={50}
+                            value={item.weight}
+                            onChange={(e) =>
+                              handleUpdateWeight(item.item_id, parseInt(e.target.value, 10) || 1)
+                            }
+                            className="w-14 px-2 py-1 text-xs font-mono font-black text-center border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(item.item_id)}
+                            className="p-1.5 border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#E63329] hover:text-white transition rounded-none"
+                            title="Remove Candidate"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
 
-                      {/* Weight Selector */}
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="text-[10px] font-mono uppercase font-black text-[#888888]">
-                          Weight:
-                        </span>
-                        <input
-                          type="number"
-                          min={1}
-                          max={50}
-                          value={item.weight}
-                          onChange={(e) =>
-                            handleUpdateWeight(item.item_id, parseInt(e.target.value, 10) || 1)
+                      {/* Card Clues / Quotes (Plural with random pick on shuffle) */}
+                      <div className="pt-2 border-t border-dashed border-[#111111]/20 dark:border-white/20 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono uppercase font-black text-[#888888]">
+                            Card Clues / Quotes (one per line, picked randomly on shuffle):
+                          </span>
+                          {item.quotes && item.quotes.length > 1 && (
+                            <span className="text-[9px] font-mono font-bold text-[#E63329]">
+                              {item.quotes.length} quotes configured
+                            </span>
+                          )}
+                        </div>
+                        <textarea
+                          rows={2}
+                          placeholder={'e.g.\nSmoky woodfired Margherita pizza\nCosy candlelit hidden garden\nCrispy truffle parmesan fries'}
+                          value={
+                            item.quotes && item.quotes.length > 0
+                              ? item.quotes.join('\n')
+                              : (item.quote || '')
                           }
-                          className="w-14 px-2 py-1 text-xs font-mono font-black text-center border-2 border-[#111111] dark:border-[#FFFFFF] rounded-none bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] focus:outline-none"
+                          onChange={(e) => handleUpdateQuotes(item.item_id, e.target.value)}
+                          className="w-full px-2.5 py-1.5 text-xs border border-[#111111] dark:border-white bg-[#F7F5F0] dark:bg-[#16191E] text-[#111111] dark:text-[#FFFFFF] font-mono focus:outline-none focus:border-[#E63329] leading-relaxed"
                         />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveItem(item.item_id)}
-                          className="p-1.5 border-2 border-[#111111] dark:border-[#FFFFFF] bg-white dark:bg-[#111111] text-[#111111] dark:text-[#FFFFFF] hover:bg-[#E63329] hover:text-white transition rounded-none"
-                          title="Remove Candidate"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
                       </div>
                     </div>
                   ))}
